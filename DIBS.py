@@ -1,6 +1,7 @@
 import discord
 import MagicCard
 import Token
+import Monaco
 
 client = discord.Client()
 
@@ -13,9 +14,9 @@ async def on_message(message):
     if message.content.startswith('$alex'):
          await client.send_message(message.channel, 'Alex does suck dick legit.')
          
-    elif message.content.startswith('$mtg jamal'):
-         await client.send_message(message.channel, 'Fuck you Brian')
-    
+    elif message.content.startswith('$monaco'):
+        await client.send_message(message.channel, Monaco.current_movies())
+
     elif message.content.startswith('$mtgimage'):
         card_id = MagicCard.card_check(message.content[10:])
         if card_id:
