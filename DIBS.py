@@ -1,5 +1,6 @@
 import discord
 import MagicCard
+import Stocks
 import Token
 import Monaco
 
@@ -42,6 +43,12 @@ async def on_message(message):
             reply += MagicCard.card_price(message.content[5:])
             imgname = MagicCard.card_image(card_id)
             await client.send_file(message.channel, imgname, content=reply)
+
+    elif message.content.startswith('$stock'):
+        stockName = Stocks.stock(message.content[8:])
+        if stockName:
+            text = Stocks.stock(stockName)
+            await client.send_message(message.channel, text)
 
 
 @client.event
