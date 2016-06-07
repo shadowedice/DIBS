@@ -1,4 +1,5 @@
 import discord
+import os
 import MagicCard
 import Stocks
 import Token
@@ -23,6 +24,7 @@ async def on_message(message):
         if card_id:
             imgname = MagicCard.card_image(card_id)
             await client.send_file(message.channel, imgname)
+            os.remove(imgname)
         
     elif message.content.startswith('$mtgtext'):
         card_id = MagicCard.card_check(message.content[9:])
@@ -43,12 +45,11 @@ async def on_message(message):
             reply += MagicCard.card_price(message.content[5:])
             imgname = MagicCard.card_image(card_id)
             await client.send_file(message.channel, imgname, content=reply)
+            os.remove(imgname)
 
     elif message.content.startswith('$stock'):
-        stockName = Stocks.stock(message.content[8:])
-        if stockName:
-            text = Stocks.stock(stockName)
-            await client.send_message(message.channel, text)
+        text = Stocks.stock(message.content[7:])
+        await client.send_message(message.channel, text)
 
 
 @client.event

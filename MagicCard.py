@@ -60,7 +60,7 @@ def card_text(card_id):
     
 def card_image(card_id):
     link = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%s&type=card" % card_id
-    imgname = "mtgcard.jpg"
+    imgname = card_id + ".jpg"
     ur.urlretrieve(link, imgname)
     return imgname
     
@@ -71,7 +71,9 @@ def card_price(card):
     soup = BeautifulSoup(page, 'html.parser')
     
     if soup.find('td', class_="lowprice") is None:
-        ret = "No pricing data found"
+        ret = "---------------------------------\n"
+        ret += "No pricing data found\n"
+        ret += "---------------------------------"
     else:
         ret = "---------------------------------\n"
         ret += "MTGStocks High: " + soup.find('td', class_="highprice").get_text() + "\n"
