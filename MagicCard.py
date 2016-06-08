@@ -65,15 +65,19 @@ def card_image(card_id):
     return imgname
     
 def card_price(card):
+    noPrice = "---------------------------------\n"
+    noPrice += "No pricing data found\n"
+    noPrice += "---------------------------------"
     fmtName = ur.quote('+'.join(card.split(' ')), '/+')
     link = 'http://www.mtgstocks.com/cards/search?utf8=%E2%9C%93&print%5Bcard%5D={}&button='.format(fmtName)
-    page = ur.urlopen(link).read()
+    try:
+        page = ur.urlopen(link).read()
+    except:
+        return noPrice
+        
     soup = BeautifulSoup(page, 'html.parser')
-    
     if soup.find('td', class_="lowprice") is None:
-        ret = "---------------------------------\n"
-        ret += "No pricing data found\n"
-        ret += "---------------------------------"
+        return noPrice
     else:
         ret = "---------------------------------\n"
         ret += "MTGStocks High: " + soup.find('td', class_="highprice").get_text() + "\n"

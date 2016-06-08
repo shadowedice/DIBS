@@ -4,8 +4,13 @@ import MagicCard
 import Stocks
 import Token
 import Monaco
+import FFXIV
+import SoundEffect
 
 client = discord.Client()
+
+if not discord.opus.is_loaded():
+    discord.opus.load_opus("libopus.so")
 
 @client.event
 async def on_message(message):
@@ -17,7 +22,7 @@ async def on_message(message):
          await client.send_message(message.channel, 'Alex does suck dick legit.')
          
     elif message.content.startswith('$monaco'):
-        await client.send_message(message.channel, Monaco.current_movies())
+        await client.send_message(message.channel, Monaco.current_movies(message.content[8:]))
 
     elif message.content.startswith('$mtgimage'):
         card_id = MagicCard.card_check(message.content[10:])
@@ -50,7 +55,13 @@ async def on_message(message):
     elif message.content.startswith('$stock'):
         text = Stocks.stock(message.content[7:])
         await client.send_message(message.channel, text)
-
+        
+    elif message.content.startswith('$xanthe'):
+        reply = FFXIV.xanthe_pun()
+        await client.send_message(message.channel, reply)
+        await SoundEffect.playEffect(client, message.author.voice_channel, 'Level Down.mp3')
+        
+        
 
 @client.event
 async def on_ready():
