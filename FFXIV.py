@@ -1,9 +1,15 @@
-import discord
+from discord.ext import commands
+import SoundEffect
 
-class Xanthe:
-    punCount = 0
+class FFXIV:
+    def __init__(self, bot):
+        self.bot = bot
+        self.xanthePuns = 0
 
-def xanthe_pun():
-    Xanthe.punCount += 1
-    return "Xanthe and his crazy puns are now at: %d" % Xanthe.punCount
+    @commands.command(pass_context=True)
+    async def xanthe(self, ctx):
+        self.xanthePuns += 1
+        ret = "Xanthe and his crazy puns are now at: %d" % self.xanthePuns
+        await self.bot.say(ret)
+        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, 'Level Down.mp3')
     
