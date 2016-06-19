@@ -6,6 +6,12 @@ from bs4 import BeautifulSoup
 class Stocks:
     def __init__(self, bot):
         self.bot = bot
+    
+    def card_image(self):
+        link = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%s&type=card" % self.cardId
+        imgname = self.cardId + ".jpg"
+        ur.urlretrieve(link, imgname)
+        return imgname
         
     @commands.command()
     async def stock(self, name : str):
@@ -27,3 +33,13 @@ class Stocks:
         
             #Return a string with desired data
             await self.bot.say('Grabbing the stock data for: {}! May the market be ever in your favor!\n{}:\nCurrently valued at: ${}'.format(name.upper(), companyName, currentPrice))
+        
+        imageData = soup.find('div', class_="chart")
+        if imageData is None:
+            await self.bot.say('There is no graph data for that ticker value.')
+        else:
+            chartURL = imageData.find('img')['src']
+            imgname = "chart.jpg"
+            ur.urlretrieve(chartURL, imgname)
+            await self.bot.upload(imgname)
+            os.remove(imgname)
