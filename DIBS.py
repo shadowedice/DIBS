@@ -4,6 +4,7 @@ from Stocks import Stocks
 from Monaco import Monaco
 from MagicCard import MagicCard
 from FFXIV import FFXIV
+from TicTacToe import TicTacToe
 import Token
 
 if not discord.opus.is_loaded():
@@ -15,6 +16,7 @@ bot.add_cog(Stocks(bot))
 bot.add_cog(Monaco(bot))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(FFXIV(bot))
+bot.add_cog(TicTacToe(bot))
 
 @bot.event
 async def on_ready():
