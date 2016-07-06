@@ -1,6 +1,7 @@
 from discord.ext import commands
 import urllib.request as ur
 from bs4 import BeautifulSoup
+import os
 
 
 class Stocks:
