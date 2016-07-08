@@ -26,7 +26,9 @@ class MagicCard:
         elif(text == 'White'):
             return "W"
         elif(text == 'Red'):
-            return "R"            
+            return "R"    
+        elif(text == 'Variable Colorless'):
+            return "X"
         else:
             return text
 
