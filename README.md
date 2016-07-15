@@ -33,4 +33,4 @@ Command | Description | Usage
 `$ttt` | If currently your turn and spot is free, places your mark | $ttt 1 1
 `$ttt board` | Prints the current board | $ttt board
 `$ttt turn` | Displays the current users turn | $ttt turn
-`$ttt quit' | Ends the current game if you are playing | $ttt quit
+`$ttt quit` | Ends the current game if you are playing | $ttt quit
