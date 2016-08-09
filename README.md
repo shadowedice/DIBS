@@ -10,6 +10,8 @@ Command | Description | Usage
 `$mtgtext` | Retrieves the card information | $mtgtext snap
 `$mtgimage` | Retrieves the card image | $mtgimage snap
 `$mtgprice` | Retrieves the card price | $mtgprice snap
+`$mtglegaity` | Retrieves the card legality | $mtglegality snap
+`$mtgrulings` | Retrieves the card rulings | $mtgrulings snap
 
 ### Stocks
 Command | Description | Usage
