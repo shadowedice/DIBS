@@ -103,6 +103,32 @@ class MagicCard:
             ret += "---------------------------------"
         return ret
         
+    def card_rulings(self):
+        link = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=%s" % self.cardId
+        page = ur.urlopen(link).read()
+        
+        soup = BeautifulSoup(page, 'html.parser')
+        ret = ""
+        
+        for link in soup.find_all('td', class_="rulingsText"):
+            ret += "-" + link.get_text().strip() + "\n"
+        return ret
+        
+    def card_legality(self):
+        link = "http://gatherer.wizards.com/Pages/Card/Printings.aspx?multiverseid=%s" % self.cardId
+        page = ur.urlopen(link).read()
+        
+        soup = BeautifulSoup(page, 'html.parser')
+        ret = ""
+        
+        for link in soup.find_all('tr', class_="cardItem"):
+            column = link.find('td', class_="column1");
+            #this avoids the top table
+            if column is not None:
+                ret += "**" + link.find('td', class_="column1").get_text().strip() + "**"
+                ret += ": " + link.find('td', attrs={'style':'text-align:center;'}).get_text().strip() + "\n"
+        return ret
+        
     @commands.command()
     async def mtg(self,*strings : str):
         self.cardName = self.combine_str(strings)
@@ -137,4 +163,20 @@ class MagicCard:
         self.cardId = self.card_check()
         if self.cardId:
             reply = self.card_price()
+            await self.bot.say(reply)
+            
+    @commands.command()
+    async def mtgrulings(self, *strings : str):
+        self.cardName = self.combine_str(strings)
+        self.cardId = self.card_check()
+        if self.cardId:
+            reply = self.card_rulings()
+            await self.bot.say(reply)
+            
+    @commands.command()
+    async def mtglegality(self, *strings : str):
+        self.cardName = self.combine_str(strings)
+        self.cardId = self.card_check()
+        if self.cardId:
+            reply = self.card_legality()
             await self.bot.say(reply)

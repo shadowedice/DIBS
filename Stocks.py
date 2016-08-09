@@ -7,12 +7,6 @@ import os
 class Stocks:
     def __init__(self, bot):
         self.bot = bot
-    
-    def card_image(self):
-        link = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%s&type=card" % self.cardId
-        imgname = self.cardId + ".jpg"
-        ur.urlretrieve(link, imgname)
-        return imgname
         
     @commands.command()
     async def stock(self, name : str):
