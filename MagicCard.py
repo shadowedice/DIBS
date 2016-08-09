@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup, Tag
 import re
 import os
 
+MESSAGE_LIMIT = 1800
+
 class MagicCard:
     def __init__(self,bot):
         self.bot = bot
@@ -108,10 +110,22 @@ class MagicCard:
         page = ur.urlopen(link).read()
         
         soup = BeautifulSoup(page, 'html.parser')
-        ret = ""
+        ret = []
+        ret.append("")
+        retIndex = 0
         
         for link in soup.find_all('td', class_="rulingsText"):
-            ret += "-" + link.get_text().strip() + "\n"
+            text = "-" + link.get_text().strip() + "\n";
+            #If one single ruling is bigger than message limit
+            if len(text) > MESSAGE_LIMIT:
+                ret[retIndex].append([text[i:i + MESSAGE_LIMIT] for i in range(0, len(text), MESSAGE_LIMIT)])
+            #If multiple rulings are bigger than message limit
+            elif len(ret[retIndex]) + len(text) > MESSAGE_LIMIT:
+                ret.append("")
+                retIndex += 1
+                ret[retIndex] += text
+            else:
+                ret[retIndex] += text
         return ret
         
     def card_legality(self):
@@ -127,7 +141,8 @@ class MagicCard:
             if column is not None:
                 ret += "**" + link.find('td', class_="column1").get_text().strip() + "**"
                 ret += ": " + link.find('td', attrs={'style':'text-align:center;'}).get_text().strip() + "\n"
-        return ret
+        
+        
         
     @commands.command()
     async def mtg(self,*strings : str):
@@ -171,7 +186,8 @@ class MagicCard:
         self.cardId = self.card_check()
         if self.cardId:
             reply = self.card_rulings()
-            await self.bot.say(reply)
+            for msg in reply:
+                await self.bot.say(msg)
             
     @commands.command()
     async def mtglegality(self, *strings : str):
