@@ -142,7 +142,7 @@ class MagicCard:
                 ret += "**" + link.find('td', class_="column1").get_text().strip() + "**"
                 ret += ": " + link.find('td', attrs={'style':'text-align:center;'}).get_text().strip() + "\n"
         
-        
+        return ret
         
     @commands.command()
     async def mtg(self,*strings : str):
