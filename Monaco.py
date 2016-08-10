@@ -1,5 +1,6 @@
 from discord.ext import commands
 import urllib.request as ur
+import datetime as dt
 from bs4 import BeautifulSoup, Tag
 
 class Monaco:
@@ -13,9 +14,24 @@ class Monaco:
             return 'Digital Cinema'
         else:
             return 'RealD 3D'
+            
+    def getDate(self, date):
+        today = dt.date.today()
+        day = today + dt.timedelta((date-today.weekday()) % 7)
+        return day.strftime("%m/%d/%Y")
 
     @commands.command()
     async def monaco(self, date : str):
+        day = date.lower
+        days = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
+        #handle illegal input and entering days of the week
+        if day in days:
+            date = getDate(days.index(day))
+        else:
+            try:
+                dt.datetime.strptime(date,"%m/%d/%Y")
+            except ValueError:
+                self.bot.say("Enter date in m/d/yyyy format or enter day of the week.")
         url = "http://www.cinemark.com/theatre-detail.aspx?node_id=430717&showtime_date=%s" % date
         page = ur.urlopen(url).read()
         soup = BeautifulSoup(page, 'html.parser')
