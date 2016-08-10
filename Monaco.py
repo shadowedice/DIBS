@@ -28,11 +28,17 @@ class Monaco:
         if day in days:
             date = self.getDate(days.index(day))
         else:
-            try:
-                dt.datetime.strptime(date,"%m/%d/%Y")
-            except ValueError:
-                await self.bot.say("Enter date in m/d/yyyy format or enter day of the week.")
-                return
+            valid = True
+            for fmt in ("%m/%d/%Y","%m/%d/%y"):
+                try:
+                    dt.datetime.strptime(date,fmt)
+                    valid=True
+                except ValueError:
+                    valid=False
+                    pass
+            if valid == False:
+                await self.bot.say("Enter date in m/d/y format or enter day of the week.")
+                return    
         url = "http://www.cinemark.com/theatre-detail.aspx?node_id=430717&showtime_date=%s" % date
         page = ur.urlopen(url).read()
         soup = BeautifulSoup(page, 'html.parser')
