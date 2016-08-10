@@ -22,16 +22,17 @@ class Monaco:
 
     @commands.command()
     async def monaco(self, date : str):
-        day = date.lower
+        day = date.lower()
         days = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
         #handle illegal input and entering days of the week
         if day in days:
-            date = getDate(days.index(day))
+            date = self.getDate(days.index(day))
         else:
             try:
                 dt.datetime.strptime(date,"%m/%d/%Y")
             except ValueError:
-                self.bot.say("Enter date in m/d/yyyy format or enter day of the week.")
+                await self.bot.say("Enter date in m/d/yyyy format or enter day of the week.")
+                return
         url = "http://www.cinemark.com/theatre-detail.aspx?node_id=430717&showtime_date=%s" % date
         page = ur.urlopen(url).read()
         soup = BeautifulSoup(page, 'html.parser')
