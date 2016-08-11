@@ -43,7 +43,7 @@ class Monaco:
         page = ur.urlopen(url).read()
         soup = BeautifulSoup(page, 'html.parser')
         
-        ret = "**-------------------------------------------**\n" 
+        ret = "\n**-------------------------------------------**\n" 
         ret += "**Monaco showings for: " + date + "**\n"
         ret += "**-------------------------------------------**\n" 
          
