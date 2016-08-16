@@ -39,7 +39,6 @@ class MagicCard:
             page = ur.urlopen("http://gatherer.wizards.com/Pages/Card/Details.aspx?name=%s" % ur.quote(self.cardName)).read().decode('utf-8')
             return re.search('multiverseid=([0-9]*)', page).group(1)
         except AttributeError:
-            print ("ERROR")
             return False
     
     		
@@ -112,20 +111,20 @@ class MagicCard:
         soup = BeautifulSoup(page, 'html.parser')
         ret = []
         ret.append("")
-        retIndex = 0
         
         for link in soup.find_all('td', class_="rulingsText"):
             text = "-" + link.get_text().strip() + "\n";
             #If one single ruling is bigger than message limit
             if len(text) > MESSAGE_LIMIT:
-                ret[retIndex].append([text[i:i + MESSAGE_LIMIT] for i in range(0, len(text), MESSAGE_LIMIT)])
+                ret[-1].append([text[i:i + MESSAGE_LIMIT] for i in range(0, len(text), MESSAGE_LIMIT)])
             #If multiple rulings are bigger than message limit
-            elif len(ret[retIndex]) + len(text) > MESSAGE_LIMIT:
-                ret.append("")
-                retIndex += 1
-                ret[retIndex] += text
+            elif len(ret[-1]) + len(text) > MESSAGE_LIMIT:
+                ret.append(text)
             else:
-                ret[retIndex] += text
+                ret[-1] += text
+        if ret[0] is "":
+            ret[0] = "No rulings found for card: " + self.cardName
+            
         return ret
         
     def card_legality(self):
@@ -142,6 +141,9 @@ class MagicCard:
                 ret += "**" + link.find('td', class_="column1").get_text().strip() + "**"
                 ret += ": " + link.find('td', attrs={'style':'text-align:center;'}).get_text().strip() + "\n"
         
+        if ret is "":
+            ret = "No legality found for card: " + self.cardName
+            
         return ret
         
     @commands.command()
@@ -154,6 +156,8 @@ class MagicCard:
             imgname = self.card_image()
             await self.bot.upload(imgname, content=reply)
             os.remove(imgname)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgtext(self, *strings : str):
@@ -162,6 +166,8 @@ class MagicCard:
         if self.cardId:
             reply = self.card_text()
             await self.bot.say(reply)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgimage(self, *strings : str):
@@ -171,6 +177,8 @@ class MagicCard:
             imgname = self.card_image()
             await self.bot.upload(imgname)
             os.remove(imgname)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgprice(self, *strings : str):
@@ -179,6 +187,8 @@ class MagicCard:
         if self.cardId:
             reply = self.card_price()
             await self.bot.say(reply)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgrulings(self, *strings : str):
@@ -188,6 +198,8 @@ class MagicCard:
             reply = self.card_rulings()
             for msg in reply:
                 await self.bot.say(msg)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtglegality(self, *strings : str):
@@ -196,3 +208,5 @@ class MagicCard:
         if self.cardId:
             reply = self.card_legality()
             await self.bot.say(reply)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
