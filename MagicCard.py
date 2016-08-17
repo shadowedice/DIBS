@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup, Tag
 import re
 import os
 
+MESSAGE_LIMIT = 1800
+
 class MagicCard:
     def __init__(self,bot):
         self.bot = bot
@@ -26,7 +28,9 @@ class MagicCard:
         elif(text == 'White'):
             return "W"
         elif(text == 'Red'):
-            return "R"            
+            return "R"    
+        elif(text == 'Variable Colorless'):
+            return "X"
         else:
             return text
 
@@ -35,7 +39,6 @@ class MagicCard:
             page = ur.urlopen("http://gatherer.wizards.com/Pages/Card/Details.aspx?name=%s" % ur.quote(self.cardName)).read().decode('utf-8')
             return re.search('multiverseid=([0-9]*)', page).group(1)
         except AttributeError:
-            print ("ERROR")
             return False
     
     		
@@ -101,6 +104,48 @@ class MagicCard:
             ret += "---------------------------------"
         return ret
         
+    def card_rulings(self):
+        link = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=%s" % self.cardId
+        page = ur.urlopen(link).read()
+        
+        soup = BeautifulSoup(page, 'html.parser')
+        ret = []
+        ret.append("")
+        
+        for link in soup.find_all('td', class_="rulingsText"):
+            text = "-" + link.get_text().strip() + "\n";
+            #If one single ruling is bigger than message limit
+            if len(text) > MESSAGE_LIMIT:
+                ret[-1].append([text[i:i + MESSAGE_LIMIT] for i in range(0, len(text), MESSAGE_LIMIT)])
+            #If multiple rulings are bigger than message limit
+            elif len(ret[-1]) + len(text) > MESSAGE_LIMIT:
+                ret.append(text)
+            else:
+                ret[-1] += text
+        if ret[0] is "":
+            ret[0] = "No rulings found for card: " + self.cardName
+            
+        return ret
+        
+    def card_legality(self):
+        link = "http://gatherer.wizards.com/Pages/Card/Printings.aspx?multiverseid=%s" % self.cardId
+        page = ur.urlopen(link).read()
+        
+        soup = BeautifulSoup(page, 'html.parser')
+        ret = ""
+        
+        for link in soup.find_all('tr', class_="cardItem"):
+            column = link.find('td', class_="column1");
+            #this avoids the top table
+            if column is not None:
+                ret += "**" + link.find('td', class_="column1").get_text().strip() + "**"
+                ret += ": " + link.find('td', attrs={'style':'text-align:center;'}).get_text().strip() + "\n"
+        
+        if ret is "":
+            ret = "No legality found for card: " + self.cardName
+            
+        return ret
+        
     @commands.command()
     async def mtg(self,*strings : str):
         self.cardName = self.combine_str(strings)
@@ -111,6 +156,8 @@ class MagicCard:
             imgname = self.card_image()
             await self.bot.upload(imgname, content=reply)
             os.remove(imgname)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgtext(self, *strings : str):
@@ -119,6 +166,8 @@ class MagicCard:
         if self.cardId:
             reply = self.card_text()
             await self.bot.say(reply)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgimage(self, *strings : str):
@@ -128,6 +177,8 @@ class MagicCard:
             imgname = self.card_image()
             await self.bot.upload(imgname)
             os.remove(imgname)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
             
     @commands.command()
     async def mtgprice(self, *strings : str):
@@ -136,3 +187,26 @@ class MagicCard:
         if self.cardId:
             reply = self.card_price()
             await self.bot.say(reply)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
+            
+    @commands.command()
+    async def mtgrulings(self, *strings : str):
+        self.cardName = self.combine_str(strings)
+        self.cardId = self.card_check()
+        if self.cardId:
+            reply = self.card_rulings()
+            for msg in reply:
+                await self.bot.say(msg)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
+            
+    @commands.command()
+    async def mtglegality(self, *strings : str):
+        self.cardName = self.combine_str(strings)
+        self.cardId = self.card_check()
+        if self.cardId:
+            reply = self.card_legality()
+            await self.bot.say(reply)
+        else:
+            await self.bot.say("Could not find card: " + self.cardName)
