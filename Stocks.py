@@ -22,15 +22,23 @@ class Stocks:
         nameData = " "
         priceData = " "
 
-        for h1 in soup.findAll('h1', class_="D(ib) Fz(18px)"):
+        h1 = soup.find('h1', class_="D(ib) Fz(18px)")
+        if h1 is not None:
             nameData = h1.get_text()
+        else:
+            await self.bot.say('There is no market data for that ticker value.')
+            return
             
-        for span in soup.findAll('span', class_="Fw(500) D(ib) Fz(36px)"):
+        span = soup.find('span', class_="Fw(b) D(ib) Fz(36px) Mb(-4px)")
+        if span is not None:
             priceData = span.get_text()
+        else:
+            await self.bot.say('There is no price data for that ticker value.')
+            return
 
         # If the stock results are not found, Yahoo! redirects to a search
-        if "Search Results" in nameData:
-            await self.bot.say('There is no market data for that ticker value.')
+        #if "Search Results" in nameData:
+        #    await self.bot.say('There is no market data for that ticker value.')
             
         #Return a string with desired data
         await self.bot.say('Grabbing the stock data for: {}! May the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}'.format(name.upper(), nameData, priceData))
