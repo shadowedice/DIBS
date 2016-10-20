@@ -27,6 +27,7 @@ Command | Description | Usage
 Command | Description | Usage
 --------|--------------|-------
 `$xanthe` |  Plays a sound effect and updates the pun counter | $xanthe
+`$pam` | Plays a sound effect and updates the meditation counter | $pam
 
 ### Tic Tac Toe
 Command | Description | Usage
