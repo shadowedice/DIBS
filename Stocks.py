@@ -29,7 +29,7 @@ class Stocks:
             await self.bot.say('There is no market data for that ticker value.')
             return
             
-        span = soup.find('span', class_="Fw(b) D(ib) Fz(36px) Mb(-4px)")
+        span = soup.find('span', class_="Fw(b) Fz(36px) Mb(-4px)")
         if span is not None:
             priceData = span.get_text()
         else:
