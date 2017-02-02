@@ -6,41 +6,12 @@ class FFXIV:
         self.bot = bot
         self.userCommands = []
         self.getUserCommands()
-
-    #@commands.command(pass_context=True)
-    #async def xanthe(self, ctx):
-    #    ret = "Xanthe and his crazy puns are now at: %d" % self.getFileCount("punCount.txt")
-    #    await self.bot.say(ret)
-    #    try:
-    #        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, 'Level Down.mp3')
-    #    except AttributeError:
-    #        print("Error: Failed in xanthe callback")
-    #@commands.command(pass_context=True)
-    #async def pam(self, ctx):
-    #    ret = "Pam has meditated %d times now!" % self.getFileCount("meditationCount.txt")
-    #    await self.bot.say(ret)
-    #    try:
-    #        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, 'Pam Sound.mp3')
-    #    except AttributeError:
-    #        print("Error: Failed in pam callback")
-    #@commands.command(pass_context=True)
-    #async def yoji(self, ctx):
-    #    ret = "Yoji has taken %d big dicks!" % self.getFileCount("yojiCount.txt")
-    #    await self.bot.say(ret)
-    #    try:
-    #        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, 'yoji.mp3')
-    #    except AttributeError:
-    #        print("Error: Failed in yoji callback")
-    #        
-    #@commands.command(pass_context=True)
-    #async def sloppy(self, ctx):
-    #    try:
-    #        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, 'sloppy.mp3')
-    #    except AttributeError:
-    #        print("Error: Failed in sloppy callback")
             
     @commands.command(pass_context=True)
     async def ff(self, ctx, name : str):
+        if name == forceupdate:
+            self.getUserCommands()
+            await self.bot.say("Updated FF Commands")
         for cmd in self.userCommands:
             if cmd[0] == name:
                 if cmd[1]:
@@ -69,6 +40,7 @@ class FFXIV:
         return value
         
     def getUserCommands(self):
+        self.userCommands.clear()
         with open("userCommands.txt") as file:
             for line in file:
                 self.userCommands.append([line.strip(), file.readline().strip(), file.readline().strip(), file.readline().strip()])

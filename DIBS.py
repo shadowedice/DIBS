@@ -6,6 +6,7 @@ from MagicCard import MagicCard
 from FFXIV import FFXIV
 from TicTacToe import TicTacToe
 from Overwatch import Overwatch
+from SoundBoard import SoundBoard
 import Token
 
 if not discord.opus.is_loaded():
@@ -19,6 +20,7 @@ bot.add_cog(MagicCard(bot))
 bot.add_cog(FFXIV(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
+bot.add_cog(SoundBoard(bot))
 
 @bot.event
 async def on_ready():
