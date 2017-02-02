@@ -25,7 +25,7 @@ class SoundBoard:
         self.soundCommands.clear()
         with open("./Commands/soundCommands.txt") as file:
             for line in file:
-                self.soundCommands.append([line.strip(), file.readline().strip(), file.readline().strip(), file.readline().strip()])
+                self.soundCommands.append([line.strip(), file.readline().strip()])
         
         
     

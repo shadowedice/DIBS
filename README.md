@@ -23,11 +23,11 @@ Command | Description | Usage
 --------|--------------|-------
 `$monaco` |  Retrieves the movie times for a given day | $monaco 7/17/16
 
-### Final Fantasy XIV
+### Sound Effects
 Command | Description | Usage
 --------|--------------|-------
-`$xanthe` |  Plays a sound effect and updates the pun counter | $xanthe
-`$pam` | Plays a sound effect and updates the meditation counter | $pam
+`$ff` |  Has an option to play a sound, say text, and update a counter | $ff xanthe
+`$sb` | Plays a sound effect | $sb myman
 
 ### Tic Tac Toe
 Command | Description | Usage
