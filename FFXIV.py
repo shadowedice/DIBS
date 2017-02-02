@@ -9,22 +9,23 @@ class FFXIV:
             
     @commands.command(pass_context=True)
     async def ff(self, ctx, name : str):
-        if name == forceupdate:
+        if name == 'forceupdate':
             self.getUserCommands()
             await self.bot.say("Updated FF Commands")
-        for cmd in self.userCommands:
-            if cmd[0] == name:
-                if cmd[1]:
-                    if cmd[2]:
-                        ret = cmd[1] % self.getFileCount(cmd[2])
-                    else:
-                        ret = cmd[1]
-                    await self.bot.say(ret)
-                try:
-                    if cmd[3]:
-                        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, cmd[3])
-                except AttributeError:
-                    print("Error: Failed in %s callback" % cmd[0])
+        else:
+            for cmd in self.userCommands:
+                if cmd[0] == name:
+                    if cmd[1]:
+                        if cmd[2]:
+                            ret = cmd[1] % self.getFileCount(cmd[2])
+                        else:
+                            ret = cmd[1]
+                        await self.bot.say(ret)
+                    try:
+                        if cmd[3]:
+                            await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, cmd[3])
+                    except AttributeError:
+                        print("Error: Failed in %s callback" % cmd[0])
         
     def getFileCount(self, filename):
         try:

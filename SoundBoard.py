@@ -9,16 +9,17 @@ class SoundBoard:
             
     @commands.command(pass_context=True)
     async def sb(self, ctx, name : str):
-        if name == forceupdate:
+        if name == 'forceupdate':
             self.getSoundCommands()
             await self.bot.say("Updated SB Commands")
-        for cmd in self.soundCommands:
-            if cmd[0] == name:
-                try:
-                    if cmd[1]:
-                        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, cmd[1])
-                except AttributeError:
-                    print("Error: Failed in %s callback" % cmd[0])
+        else:
+            for cmd in self.soundCommands:
+                if cmd[0] == name:
+                    try:
+                        if cmd[1]:
+                            await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, cmd[1])
+                    except AttributeError:
+                        print("Error: Failed in %s callback" % cmd[0])
         
     def getSoundCommands(self):
         self.soundCommands.clear()
