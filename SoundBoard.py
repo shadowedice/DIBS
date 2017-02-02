@@ -23,7 +23,7 @@ class SoundBoard:
         
     def getSoundCommands(self):
         self.soundCommands.clear()
-        with open("soundCommands.txt") as file:
+        with open("./Commands/soundCommands.txt") as file:
             for line in file:
                 self.soundCommands.append([line.strip(), file.readline().strip(), file.readline().strip(), file.readline().strip()])
         

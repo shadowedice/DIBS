@@ -17,7 +17,7 @@ class FFXIV:
                 if cmd[0] == name:
                     if cmd[1]:
                         if cmd[2]:
-                            ret = cmd[1] % self.getFileCount(cmd[2])
+                            ret = cmd[1] % self.getFileCount('./VarFiles/' + cmd[2])
                         else:
                             ret = cmd[1]
                         await self.bot.say(ret)
@@ -42,7 +42,7 @@ class FFXIV:
         
     def getUserCommands(self):
         self.userCommands.clear()
-        with open("userCommands.txt") as file:
+        with open("./Commands/userCommands.txt") as file:
             for line in file:
                 self.userCommands.append([line.strip(), file.readline().strip(), file.readline().strip(), file.readline().strip()])
         

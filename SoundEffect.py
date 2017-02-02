@@ -7,7 +7,7 @@ async def playEffect(client, channel, file):
     except:
         return
     
-    player = voice.create_ffmpeg_player(file)
+    player = voice.create_ffmpeg_player('./Audio/' + file)
     player.start()
     while player.is_playing():
         await asyncio.sleep(1)
