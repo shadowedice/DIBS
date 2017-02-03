@@ -3,10 +3,10 @@ from discord.ext import commands
 from Stocks import Stocks
 from Monaco import Monaco
 from MagicCard import MagicCard
-from FFXIV import FFXIV
 from TicTacToe import TicTacToe
 from Overwatch import Overwatch
 from SoundBoard import SoundBoard
+from Admin import Admin
 import Token
 
 if not discord.opus.is_loaded():
@@ -14,13 +14,16 @@ if not discord.opus.is_loaded():
 
 bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
+soundBoard = SoundBoard(bot)
+
 bot.add_cog(Stocks(bot))
 bot.add_cog(Monaco(bot))
 bot.add_cog(MagicCard(bot))
-bot.add_cog(FFXIV(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
-bot.add_cog(SoundBoard(bot))
+bot.add_cog(soundBoard)
+bot.add_cog(Admin(bot, soundBoard))
+
 
 @bot.event
 async def on_ready():

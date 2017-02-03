@@ -21,6 +21,7 @@ class Stocks:
         soup = BeautifulSoup(stock, 'html.parser')
         nameData = " "
         priceData = " "
+        outMarketData = ""
 
         h1 = soup.find('h1', class_="D(ib) Fz(18px)")
         if h1 is not None:
@@ -35,13 +36,16 @@ class Stocks:
         else:
             await self.bot.say('There is no price data for that ticker value.')
             return
+        span = soup.find('span', class_="C(black) Fz(24px) Fw(b")
+        if span is not None:
+            outMarketdata = "\nOut of market hours value is currently: %s" % span.get_text()
 
         # If the stock results are not found, Yahoo! redirects to a search
         #if "Search Results" in nameData:
         #    await self.bot.say('There is no market data for that ticker value.')
             
         #Return a string with desired data
-        await self.bot.say('Grabbing the stock data for: {}! May the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}'.format(name.upper(), nameData, priceData))
+        await self.bot.say('Grabbing the stock data for: {}! May the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}{}'.format(name.upper(), nameData, priceData, outMarketData))
         
         # imageData = soup.find('div', class_="chart")
         # if imageData is None:

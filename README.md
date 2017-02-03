@@ -26,8 +26,7 @@ Command | Description | Usage
 ### Sound Effects
 Command | Description | Usage
 --------|--------------|-------
-`$ff` |  Has an option to play a sound, say text, and update a counter | $ff xanthe
-`$sb` | Plays a sound effect | $sb myman
+`$sb` | Plays a sound effect, with possible text and a counter | $sb myman
 
 ### Tic Tac Toe
 Command | Description | Usage
@@ -37,3 +36,11 @@ Command | Description | Usage
 `$ttt board` | Prints the current board | $ttt board
 `$ttt turn` | Displays the current users turn | $ttt turn
 `$ttt quit` | Ends the current game if you are playing | $ttt quit
+
+### ADMIN
+Command | Description | Usage
+--------|--------------|-------
+`$admin add` | Adds an admin or sb (Creates admin if one doesnt exist) | $admin add sb test test.mp3
+`$admin remove` | Removes an admin or sb | $admin remove sb test
+`$admin mute` | Mutes a user or sb | $admin mute sb test
+`$admin unmute` | Unmutes a user or sb | $admin unmute sb test
