@@ -15,7 +15,8 @@ class SoundBoard:
         if name == "commands":
             ret = "My current command list is "
             for cmd in self.soundCommands.sections():
-                ret += "**"+ cmd + "**, "
+                if not self.soundCommands[cmd].getboolean('mute'):
+                    ret += "**"+ cmd + "**, "
             await self.bot.say(ret)
         else:
             if str(ctx.message.author.id) in self.mutedUsers:
