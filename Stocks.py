@@ -1,6 +1,5 @@
 from discord.ext import commands
-import urllib.request as ur
-from bs4 import BeautifulSoup
+from yahoo_finance import Share
 import os
 
 
@@ -15,44 +14,6 @@ class Stocks:
         if name.lower() == 'greg':
             await self.bot.say('Greg is currently valued at $0.00. How sad.')
             return
-    
-        url = 'https://finance.yahoo.com/quote/%s?p=%s' % (name, name)
-        stock = ur.urlopen(url).read()
-        soup = BeautifulSoup(stock, 'html.parser')
-        nameData = " "
-        priceData = " "
-        outMarketData = ""
-
-        h1 = soup.find('h1', class_="D(ib) Fz(18px)")
-        if h1 is not None:
-            nameData = h1.get_text()
-        else:
-            await self.bot.say('There is no market data for that ticker value.')
-            return
-            
-        span = soup.find('span', class_="Fw(b) Fz(36px) Mb(-4px)  D(ib)")
-        if span is not None:
-            priceData = span.get_text()
-        else:
-            await self.bot.say('There is no price data for that ticker value.')
-            return
-        span = soup.find('span', class_="C(black) Fz(24px) Fw(b")
-        if span is not None:
-            outMarketdata = "\nOut of market hours value is currently: %s" % span.get_text()
-
-        # If the stock results are not found, Yahoo! redirects to a search
-        #if "Search Results" in nameData:
-        #    await self.bot.say('There is no market data for that ticker value.')
-            
-        #Return a string with desired data
-        await self.bot.say('Grabbing the stock data for: {}! May the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}{}'.format(name.upper(), nameData, priceData, outMarketData))
+        stock = Share(name)
+        await self.bot.say('Grabbing the stock data for: {}!\n May the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}'.format(name.upper(), stock.get_name(), stock.get_price()))
         
-        # imageData = soup.find('div', class_="chart")
-        # if imageData is None:
-        #     await self.bot.say('There is no graph data for that ticker value.')
-        # else:
-        #     chartURL = imageData.find('img')['src']
-        #     imgname = "chart.jpg"
-        #     ur.urlretrieve(chartURL, imgname)
-        #     await self.bot.upload(imgname)
-        #     os.remove(imgname)
