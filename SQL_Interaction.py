@@ -90,10 +90,10 @@ class SQL_Interaction:
         sqlDB.execute('SELECT points FROM user_data WHERE user = ?', (self.changePointsUser,))
         all_rows = sqlDB.fetchall()
         for row in all_rows:
-            await self.bot.say("%s's new point value is: %s" % (self.changePointsUser, row[0])
+            await self.bot.say("%s's new point value is: %s" % (self.changePointsUser, row[0]))
+
         self.changePointsUser = ""
-
-
+        
     @commands.command()
     async def plus_ten(self, searchString : str):
         sqlDB.execute('UPDATE user_data SET points = (points + 10) WHERE user = ?', (searchString,))

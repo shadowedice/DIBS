@@ -6,6 +6,7 @@ from MagicCard import MagicCard
 from TicTacToe import TicTacToe
 from Overwatch import Overwatch
 from SoundBoard import SoundBoard
+from SQL_Interaction import SQL_Interaction
 from Admin import Admin
 import Token
 
@@ -23,7 +24,7 @@ bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
 bot.add_cog(soundBoard)
 bot.add_cog(Admin(bot, soundBoard))
-
+bot.add_cog(SQL_Interaction(bot))
 
 @bot.event
 async def on_ready():
