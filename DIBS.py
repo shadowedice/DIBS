@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands
 from Stocks import Stocks
-from Monaco import Monaco
 from MagicCard import MagicCard
 from TicTacToe import TicTacToe
 from Overwatch import Overwatch
 from SoundBoard import SoundBoard
-from SQL_Interaction import SQL_Interaction
+#from SQL_Interaction import SQL_Interaction
 from Admin import Admin
 import Token
 
@@ -18,13 +17,14 @@ bot = commands.Bot(command_prefix='$', description='I am here to serve')
 soundBoard = SoundBoard(bot)
 
 bot.add_cog(Stocks(bot))
-bot.add_cog(Monaco(bot))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
 bot.add_cog(soundBoard)
 bot.add_cog(Admin(bot, soundBoard))
-bot.add_cog(SQL_Interaction(bot))
+#bot.add_cog(SQL_Interaction(bot))
+
+bot.run(Token.get_token())
 
 @bot.event
 async def on_ready():
@@ -32,5 +32,3 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-	
-bot.run(Token.get_token())

@@ -1,6 +1,6 @@
 from discord.ext import commands
-from yahoo_finance import Share
-import os
+import urllib.request as ur
+import json
 
 
 class Stocks:
@@ -14,6 +14,5 @@ class Stocks:
         if name.lower() == 'greg':
             await self.bot.say('Greg is currently valued at $0.00. How sad.')
             return
-        stock = Share(name)
-        await self.bot.say('Grabbing the stock data for: {}!\n May the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}'.format(name.upper(), stock.get_name(), stock.get_price()))
-        
+        data = json.loads(ur.urlopen('http://finance.google.com/finance?q=' + name + '&output=json').read().decode('utf-8')[3:-1])
+        await self.bot.say('Grabbing the stock data for: {}!\nMay the market be ever in your favor!\n\n{}:\nCurrently valued at: ${}'.format(data[0]['symbol'], data[0]['name'], data[0]['l']))
