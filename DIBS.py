@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
 soundBoard = SoundBoard(bot)
 
-bot.add_cog(Stocks(bot))
+bot.add_cog(Stocks(bot, Token.StockApiKey()))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
@@ -24,7 +24,6 @@ bot.add_cog(soundBoard)
 bot.add_cog(Admin(bot, soundBoard))
 #bot.add_cog(SQL_Interaction(bot))
 
-bot.run(Token.get_token())
 
 @bot.event
 async def on_ready():
@@ -32,3 +31,8 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
+    
+if Token.DiscordToken():
+    bot.run(Token.DiscordToken())
+else:
+    print("No token found. Unable to start DIBS")
