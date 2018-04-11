@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
 soundBoard = SoundBoard(bot)
 
-bot.add_cog(Stocks(bot, Token.StockApiKey()))
+bot.add_cog(Stocks(bot))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
