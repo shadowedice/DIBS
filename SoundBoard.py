@@ -3,69 +3,57 @@ import configparser
 import SoundEffect
 
 class SoundBoard:
-    def __init__(self, bot):
+    def __init__(self, bot, database):
         self.bot = bot
-        self.filename = 'soundboard.ini'
-        self.soundCommands = configparser.ConfigParser()
-        self.soundCommands.read(self.filename)
-        self.mutedUsers = []
+        self.database = database
             
     @commands.command(pass_context=True)
     async def sb(self, ctx, name : str):
         if name == "commands":
             ret = "My current command list is "
-            for cmd in self.soundCommands.sections():
-                if not self.soundCommands[cmd].getboolean('mute'):
-                    ret += "**"+ cmd + "**, "
+            vals = self.database.GetFields("SoundBoard", ["ServerID"], [ctx.message.server.id], ["Name", "Mute"])
+            for cmd in vals:
+                if cmd[1] != "True":
+                    ret += "**"+ cmd[0] + "**, "
             await self.bot.say(ret)
         else:
-            if str(ctx.message.author.id) in self.mutedUsers:
+            if self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Mute"])[0][0] == "True":
                 await self.bot.say("You are currently muted.")
             else:
-                for cmd in self.soundCommands.sections():
-                    if cmd == name and not self.soundCommands[cmd].getboolean('mute'):
-                        if self.soundCommands[cmd]['text']:
-                            ret = self.soundCommands[cmd]['text']
-                            if self.soundCommands[cmd]['count'] != "-1":
-                                self.soundCommands[cmd]['count'] = str(int(self.soundCommands[cmd]['count'])+1)
-                                self.__saveCommands()
-                                ret = ret.format(self.soundCommands[cmd]['count']);
-                            await self.bot.say(ret)
-                        try:
-                            await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, self.soundCommands[cmd]['file'])
-                        except AttributeError:
-                            print("Error: Failed in %s callback" % cmd)
-                    
-    def __saveCommands(self):
-        with open(self.filename, 'w') as file:
-            self.soundCommands.write(file)
+                vals = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["File", "Text", "Count", "Mute"])
+                if vals[0][3] != "True":
+                    if vals[0][1]:
+                        ret = vals[0][1]
+                    if vals[0][2] != "-1":
+                        self.database.SetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["Count"], [str(int(vals[0][2])+1)])
+                        ret = ret.format(vals[0][2])
+                        await self.bot.say(ret)
+                    try:
+                        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, vals[0][0])
+                    except AttributeError:
+                        print("Error: Failed in %s callback" % cmd)
+                        
             
-    def addCommand(self, name, file, params):
-        self.soundCommands[name] = {}
-        self.soundCommands[name]['file'] = file
+    def addCommand(self, server, name, file, params):
+        fields = ["File", "Text", "Count", "Mute"]
+        values = [file, "", "-1", "False"]
         if len(params) > 0:
-            self.soundCommands[name]['text'] = params[0]
+            values[1] = params[0]
         if len(params) > 1:
-            self.soundCommands[name]['count'] = params[1]
+            values[2] = params[1]
         if len(params) > 2:
-            self.soundCommands[name]['mute'] = params[2]
-        self.__saveCommands()
+            values[3] = params[2]
+        self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], fields, values)
         return True
         
-    def removeCommand(self, name):
-        if self.soundCommands.remove_section(name):
-            self.__saveCommands()
+    def removeCommand(self, server, name):
+        if self.database.RemoveEntry("SoundBoard", ["ServerID", "Name"], [server, name]):
             return True
         else:
             return False
         
-    def muteCommand(self, name, mute):
-        if self.soundCommands.has_section(name):
-            self.soundCommands[name]['mute'] = mute
-            self.__saveCommands()
+    def muteCommand(self, server, name, mute):
+        if self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], ["Mute"], [mute]):
             return True
         else:
             return False
-    
-    def updateMutedUsers(self, muteList):
-        self.mutedUsers = muteList
