@@ -18,11 +18,6 @@ Command | Description | Usage
 --------|--------------|-------
 `$stock` |  Retrieves the stock's current price and graph | $stock amd
 
-### Monaco Movie Theatre
-Command | Description | Usage
---------|--------------|-------
-`$monaco` |  Retrieves the movie times for a given day | $monaco 7/17/16
-
 ### Sound Effects
 Command | Description | Usage
 --------|--------------|-------
@@ -37,10 +32,17 @@ Command | Description | Usage
 `$ttt turn` | Displays the current users turn | $ttt turn
 `$ttt quit` | Ends the current game if you are playing | $ttt quit
 
-### ADMIN
+### Admin
 Command | Description | Usage
 --------|--------------|-------
 `$admin add` | Adds an admin or sb (Creates admin if one doesnt exist) | $admin add sb test test.mp3
 `$admin remove` | Removes an admin or sb | $admin remove sb test
 `$admin mute` | Mutes a user or sb | $admin mute sb test
 `$admin unmute` | Unmutes a user or sb | $admin unmute sb test
+`$admin update` | updates a whois | $admin update whois @name name
+
+### Who is
+Command | Description | Usage
+--------|--------------|-------
+`$iam` |  Sets the stored name for a user | $iam John Doe
+`$whois` |  Retrieves the stored name for a user | $whois @JohnDoe

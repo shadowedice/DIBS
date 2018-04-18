@@ -38,6 +38,10 @@ class User:
                 elif len(params) == 2 and params[0] == "user":
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Mute"], ["False"]):
                         await self.bot.say("Unmuted user {}".format(params[1]))
+            elif cmd == 'update':
+                if len(params) > 3 and params[0] == "whois":
+                    if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Iam"], [self.__combine_str(params[2:])]):
+                        await self.bot.say("Updated user {}'s information".format(params[1]))
             else:
                 await self.bot.say('Unknown Command')
         else:
@@ -45,11 +49,7 @@ class User:
         
     @commands.command(pass_context=True)
     async def iam(self, ctx, *name : str):
-        value = ""
-        for text in name:
-            value = value + text + " "
-        value.strip()
-        if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Iam"], [value]):
+        if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Iam"], [self.__combine_str(name)]):
             await self.bot.say("I updated your information.")
         else:
             await self.bot.say("Something went wrong and I couldn't add you.")
@@ -58,12 +58,18 @@ class User:
     async def whois(self, ctx, person : discord.Member):
         value = self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Iam"])
         if value:
-            await self.bot.say(person.name + " is " + value[0][0])
+            await self.bot.say(person.name + " is " + value[0][0] + ".")
         else:
             await self.bot.say("I do not know who " + person.name + " is.")
             
     def __stripId(self, userId):
         return userId[2:-1]
+        
+    def __combine_str(self, strings):
+        name = ''
+        for x in strings:
+            name += x + " "
+        return name.strip()
 
     def AddServerAdmins(self):
         for server in self.bot.servers:
