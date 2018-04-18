@@ -32,7 +32,6 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    user.AddServerAdmins()
     
 if Token.DiscordToken():
     bot.run(Token.DiscordToken())
