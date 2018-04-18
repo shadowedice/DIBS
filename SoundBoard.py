@@ -17,11 +17,12 @@ class SoundBoard:
                     ret += "**"+ cmd[0] + "**, "
             await self.bot.say(ret)
         else:
-            if self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Mute"])[0][0] == "True":
+            mute = self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Mute"])
+            if mute and mute[0][0] == "True":
                 await self.bot.say("You are currently muted.")
             else:
                 vals = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["File", "Text", "Count", "Mute"])
-                if vals[0][3] != "True":
+                if vals and vals[0][3] != "True":
                     if vals[0][1]:
                         ret = vals[0][1]
                     if vals[0][2] != "-1":
@@ -35,6 +36,9 @@ class SoundBoard:
                         
             
     def addCommand(self, server, name, file, params):
+        if self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
+            return False
+            
         fields = ["File", "Text", "Count", "Mute"]
         values = [file, "", "-1", "False"]
         if len(params) > 0:
@@ -43,7 +47,15 @@ class SoundBoard:
             values[2] = params[1]
         if len(params) > 2:
             values[3] = params[2]
-        self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], fields, values)
+        self.database.AddEntry("SoundBoard", ["ServerID", "Name"], [server, name], fields, values)
+        return True
+    
+    def updateCommand(self, server, name, params):
+        if not self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
+            return False
+            
+        fields = ["File", "Text", "Count", "Mute"]
+        self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], fields[:len(params)], params)
         return True
         
     def removeCommand(self, server, name):

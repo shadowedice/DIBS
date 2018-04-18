@@ -9,11 +9,14 @@ class User:
         
     @commands.command(pass_context=True)
     async def admin(self, ctx, cmd : str, *params : str):
-        if self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Admin"])[0][0] == "True":
+        val = self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Admin"])
+        if val and val[0][0] == "True":
             if cmd == 'add':
                 if len(params) >= 3 and params[0] == "sb":
                     if self.soundBoard.addCommand(ctx.message.server.id, params[1], params[2], params[3:]):
                         await self.bot.say("Added sb {}".format(params[1]))
+                    else:
+                        await self.bot.say("{} already exists as a command".format(param[1]))
                 elif len(params) == 2 and params[0] == "admin":
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["True"]):
                         await self.bot.say("Added admin {}".format(params[1]))
@@ -39,9 +42,14 @@ class User:
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Mute"], ["False"]):
                         await self.bot.say("Unmuted user {}".format(params[1]))
             elif cmd == 'update':
-                if len(params) > 3 and params[0] == "whois":
+                if len(params) >= 3 and params[0] == "whois":
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Iam"], [self.__combine_str(params[2:])]):
                         await self.bot.say("Updated user {}'s information".format(params[1]))
+                elif len(params) >= 3 and params[0] == "sb":
+                    if self.soundBoard.updateCommand(ctx.message.server.id, params[1], params[2:]):
+                        await self.bot.say("Updated sb {}.".format(params[1]))
+                    else:
+                        await self.bot.say("Could not find command {}.".format(params[1]))
             else:
                 await self.bot.say('Unknown Command')
         else:
@@ -62,6 +70,21 @@ class User:
         else:
             await self.bot.say("I do not know who " + person.name + " is.")
             
+    async def on_member_join(self, member):
+        if not self.database.FieldExists("Users", ["ServerID", "UserID"], [member.server.id, member.id]):
+            print("Adding " + member.name)
+            self.database.AddEntry("Users", ["ServerID", "UserID"], [member.server.id, member.id], ["Admin", "Mute", "Iam"], ["False", "False", ""])
+    
+    async def on_server_join(self, server):
+        for s in server:
+            for member in s.members:
+                if not self.database.FieldExists("Users", ["ServerID", "UserID"], [s.id, member.id]):
+                    if s.owner.id == member.id:
+                        admin = "True"
+                    else:
+                        admin = "False"
+                    self.database.AddEntry("Users", ["ServerID", "UserID"], [s.id, member.id], ["Admin", "Mute", "Iam"], [admin, "False", ""])
+                        
     def __stripId(self, userId):
         return userId[2:-1]
         
@@ -70,7 +93,3 @@ class User:
         for x in strings:
             name += x + " "
         return name.strip()
-
-    def AddServerAdmins(self):
-        for server in self.bot.servers:
-            self.database.SetFields("Users", ["ServerID", "UserID"], [server.id, server.owner.id], ["Admin"], ["True"])
