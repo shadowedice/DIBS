@@ -17,16 +17,17 @@ class SoundBoard:
                     ret += "**"+ cmd[0] + "**, "
             await self.bot.say(ret)
         else:
-            if self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Mute"])[0][0] == "True":
+            mute = self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Mute"])
+            if len(mute) > 0 and mute[0][0] == "True":
                 await self.bot.say("You are currently muted.")
             else:
                 vals = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["File", "Text", "Count", "Mute"])
                 if vals[0][3] != "True":
                     if vals[0][1]:
                         ret = vals[0][1]
-                    if vals[0][2] != "-1":
-                        self.database.SetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["Count"], [str(int(vals[0][2])+1)])
-                        ret = ret.format(vals[0][2])
+                        if vals[0][2] != "-1":
+                            self.database.SetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["Count"], [str(int(vals[0][2])+1)])
+                            ret = ret.format(vals[0][2])
                         await self.bot.say(ret)
                     try:
                         await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, vals[0][0])
