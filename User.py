@@ -76,14 +76,13 @@ class User:
             self.database.AddEntry("Users", ["ServerID", "UserID"], [member.server.id, member.id], ["Admin", "Mute", "Iam"], ["False", "False", ""])
     
     async def on_server_join(self, server):
-        for s in server:
-            for member in s.members:
-                if not self.database.FieldExists("Users", ["ServerID", "UserID"], [s.id, member.id]):
-                    if s.owner.id == member.id:
-                        admin = "True"
-                    else:
-                        admin = "False"
-                    self.database.AddEntry("Users", ["ServerID", "UserID"], [s.id, member.id], ["Admin", "Mute", "Iam"], [admin, "False", ""])
+        for member in server.members:
+            if not self.database.FieldExists("Users", ["ServerID", "UserID"], [server.id, member.id]):
+                if sserver.owner.id == member.id:
+                    admin = "True"
+                else:
+                    admin = "False"
+                self.database.AddEntry("Users", ["ServerID", "UserID"], [server.id, member.id], ["Admin", "Mute", "Iam"], [admin, "False", ""])
                         
     def __stripId(self, userId):
         return userId[2:-1]
