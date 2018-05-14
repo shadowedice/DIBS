@@ -1,6 +1,7 @@
 from discord.ext import commands
 import configparser
 import SoundEffect
+import os
 
 class SoundBoard:
     def __init__(self, bot, database):
@@ -37,7 +38,14 @@ class SoundBoard:
             
     def addCommand(self, server, name, file, params):
         if self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
-            return False
+            return 1
+        files = os.listdir("./Audio")
+        found = False
+        for f in files:
+            if f == file:
+                found = True
+        if not found:
+            return 2
             
         fields = ["File", "Text", "Count", "Mute"]
         values = [file, "", "-1", "False"]
@@ -48,7 +56,7 @@ class SoundBoard:
         if len(params) > 2:
             values[3] = params[2]
         self.database.AddEntry("SoundBoard", ["ServerID", "Name"], [server, name], fields, values)
-        return True
+        return 0
     
     def updateCommand(self, server, name, params):
         if not self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):

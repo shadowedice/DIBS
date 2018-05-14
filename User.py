@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import os
 
 class User:
     def __init__(self, bot, database, soundboard):
@@ -13,10 +14,13 @@ class User:
         if val and val[0][0] == "True":
             if cmd == 'add':
                 if len(params) >= 3 and params[0] == "sb":
-                    if self.soundBoard.addCommand(ctx.message.server.id, params[1], params[2], params[3:]):
+                    success = self.soundBoard.addCommand(ctx.message.server.id, params[1], params[2], params[3:])
+                    if  success == 0:
                         await self.bot.say("Added sb {}".format(params[1]))
-                    else:
-                        await self.bot.say("{} already exists as a command".format(param[1]))
+                    elif success == 1:
+                        await self.bot.say("{} already exists as a command.".format(params[1]))
+                    elif success == 2:
+                        await self.bot.say("{} does not exist.".format(params[2]))
                 elif len(params) == 2 and params[0] == "admin":
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["True"]):
                         await self.bot.say("Added admin {}".format(params[1]))
@@ -50,6 +54,15 @@ class User:
                         await self.bot.say("Updated sb {}.".format(params[1]))
                     else:
                         await self.bot.say("Could not find command {}.".format(params[1]))
+            elif cmd == 'sbfiles':
+                if len(params) == 0:
+                    txt = "The available files for sb commands are: "
+                    files = os.listdir("./Audio")
+                    for file in files:
+                        print(file)
+                        if ".mp3" in file:
+                            txt = txt + file + ", "
+                    await self.bot.say(txt)
             else:
                 await self.bot.say('Unknown Command')
         else:
@@ -78,7 +91,7 @@ class User:
     async def on_server_join(self, server):
         for member in server.members:
             if not self.database.FieldExists("Users", ["ServerID", "UserID"], [server.id, member.id]):
-                if sserver.owner.id == member.id:
+                if server.owner.id == member.id:
                     admin = "True"
                 else:
                     admin = "False"
