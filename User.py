@@ -78,7 +78,7 @@ class User:
     @commands.command(pass_context=True)
     async def whois(self, ctx, person : discord.Member):
         value = self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Iam"])
-        if value:
+        if value and value[0][0]:
             await self.bot.say(person.name + " is " + value[0][0] + ".")
         else:
             await self.bot.say("I do not know who " + person.name + " is.")
