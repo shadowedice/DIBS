@@ -20,4 +20,4 @@ class Stocks:
             if 'Error Message' in data:
                 await self.bot.say("I'm sorry but I can't find {} ticker!".format(name.upper()))
                 return
-            await self.bot.say("Grabbing the stock data for: {} ({})!\nMay the market be ever in your favor!\n\nCurrently valued at: ${}".format(data['companyName'], name.upper(), data['latestPrice']))
+            await self.bot.say("{} ({})\nLast Updated: {}\nValue: ${}".format(data['companyName'], name.upper(), data['latestTime'], data['latestPrice']))
