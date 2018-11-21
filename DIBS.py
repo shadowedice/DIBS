@@ -7,6 +7,7 @@ from Overwatch import Overwatch
 from SoundBoard import SoundBoard
 from User import User
 from Database import Database
+from Holidays import Holidays
 import Token
 
 if not discord.opus.is_loaded():
@@ -22,6 +23,7 @@ bot.add_cog(Stocks(bot))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
+bot.add_cog(Holidays(bot))
 bot.add_cog(soundBoard)
 bot.add_cog(user)
 
@@ -32,6 +34,14 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
+    for server in bot.servers:
+        for member in server.members:
+            if not database.FieldExists("Users", ["ServerID", "UserID"], [server.id, member.id]):
+                if server.owner.id == member.id:
+                    admin = "True"
+                else:
+                    admin = "False"
+                database.AddEntry("Users", ["ServerID", "UserID"], [server.id, member.id], ["Admin", "Mute", "Iam"], [admin, "False", ""])
     
 if Token.DiscordToken():
     bot.run(Token.DiscordToken())
