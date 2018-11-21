@@ -18,14 +18,15 @@ bot = commands.Bot(command_prefix='$', description='I am here to serve')
 database = Database()
 soundBoard = SoundBoard(bot,database)
 user = User(bot, database, soundBoard)
+holidays = Holidays(bot, database)
 
 bot.add_cog(Stocks(bot))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(TicTacToe(bot))
 bot.add_cog(Overwatch(bot))
-bot.add_cog(Holidays(bot))
 bot.add_cog(soundBoard)
 bot.add_cog(user)
+bot.add_cog(holidays)
 
 
 @bot.event

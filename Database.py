@@ -8,6 +8,7 @@ class Database:
         
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Users (ServerID, UserID, Admin, Mute, Iam)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID, Name, File, Text, Count, Mute)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Holidays (ServerID, UserID, Turkeys)")
         
         
     def SetFields(self, table, keys, kvals, fields, fvals):

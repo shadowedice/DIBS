@@ -4,50 +4,66 @@ import asyncio
 import random
 
 class Holidays:
-    def __init__(self, bot):
+    def __init__(self, bot, database):
         self.bot = bot
-        self.turkeyStatChan = None
-        self.currentTurkey = None
-        self.turkeyArray = []
+        self.database = database
         
-
+        #server, enabled, channel, message
+        self.turkeys = []
+        
+    async def turkeyGame(self, server):
+        textChannels = []
+        for chan in server[0].channels:
+            if chan.type == ChannelType.text and chan.permissions_for(server[0].get_member(self.bot.user.id)).send_messages:
+                print(chan)
+                textChannels.append(chan)    
+        while server[1]:
+            server[3] = await self.bot.send_message(random.choice(textChannels), "Gobble gobble! :turkey:")
+            #await asyncio.sleep(random.randint(300,1800))
+            await asyncio.sleep(random.randint(10,30))
+            if server[3]:
+                await self.bot.delete_message(server[3])
+                server[3] = None
         
     @commands.command(pass_context=True)
     async def turkey(self, ctx):
-        if self.currentTurkey and self.currentTurkey.channel.id == ctx.message.channel.id:
-            foundUser = False
-            for user in self.turkeyArray:
-                if user[0].id == ctx.message.author.id:
-                    user[1] += 1
-                    foundUser = True
-            if not foundUser:
-                self.turkeyArray.append([ctx.message.author, 1])
-            
-            msg = "Gobble Gobble! {} just found a turkey!\n".format(ctx.message.author.name)    
-            for user in self.turkeyArray:
-                msg += "{}: {}".format(user[0].name, ":turkey:" * user[1])
-            
-            await self.bot.send_message(self.turkeyStatChan, msg)
+        for server in self.turkeys:
+            if server[3] and server[3].channel.id == ctx.message.channel.id:
+                #if they arent on the list add them
+                if not self.database.FieldExists("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id]):
+                    self.database.AddEntry("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], ["0"])
+                     
+                msg = "Gobble Gobble! {} just found a turkey!\n".format(ctx.message.author.name)
                 
+                for user in self.database.GetFields("Holidays", ["ServerID"], [ctx.message.server.id], ["UserID", "Turkeys"]):
+                    if user[0] == ctx.message.author.id:
+                        self.database.SetFields("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], [str(int(user[1])+1)])
+                        msg += "{}: {}\n".format(server[0].get_member(user[0]).name, ":turkey:" * (int(user[1])+1))
+                    
+                await self.bot.send_message(server[2], msg)
+                
+                await self.bot.delete_message(server[3])
+                server[3] = None
+                await self.bot.delete_message(ctx.message)
             
-            await self.bot.delete_message(self.currentTurkey)
-            self.currentTurkey = None
-            await self.bot.delete_message(ctx.message)
+            
                 
     @commands.command(pass_context=True)
     async def thanksgiving(self, ctx):
         if ctx.message.server.owner.id == ctx.message.author.id:
-            self.turkeyStatChan = ctx.message.channel
-            while True:
-                #find all text channels and add a turkey
-                textChannels = []
-                for chan in ctx.message.server.channels:
-                    if chan.type == ChannelType.text:
-                        textChannels.append(chan)
-                self.currentTurkey = await self.bot.send_message(random.choice(textChannels), "Gobble gobble! :turkey:")
-                
-                #sleep until the next turkey is loose, kill old turkey
-                await asyncio.sleep(random.randint(300,1800))
-                if self.currentTurkey:
-                    await self.bot.delete_message(self.currentTurkey)
-                    self.currentTurkey = None
+            foundServer = False
+            for server in self.turkeys:
+                if server[0].id == ctx.message.server.id:
+                    if server[1]:
+                        server[1] = False
+                    else:
+                        server[1] = True
+                        server[2] = ctx.message.channel
+                        await self.turkeyGame(server)
+                    foundServer = True
+            if not foundServer:
+                server = [ctx.message.server, True, ctx.message.channel, None]
+                self.turkeys.append(server)
+                await self.turkeyGame(server)
+
+    
