@@ -47,8 +47,7 @@ class Holidays:
                 self.currentTurkey = await self.bot.send_message(random.choice(textChannels), "Gobble gobble! :turkey:")
                 
                 #sleep until the next turkey is loose, kill old turkey
-                #await asyncio.sleep(random.randint(300,1800))
-                await asyncio.sleep(random.randint(1,30))
+                await asyncio.sleep(random.randint(300,1800))
                 if self.currentTurkey:
                     await self.bot.delete_message(self.currentTurkey)
                     self.currentTurkey = None
