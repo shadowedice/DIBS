@@ -15,12 +15,11 @@ class Holidays:
         textChannels = []
         for chan in server[0].channels:
             if chan.type == ChannelType.text and chan.permissions_for(server[0].get_member(self.bot.user.id)).send_messages:
-                print(chan)
                 textChannels.append(chan)    
         while server[1]:
             server[3] = await self.bot.send_message(random.choice(textChannels), "Gobble gobble! :turkey:")
-            #await asyncio.sleep(random.randint(300,1800))
-            await asyncio.sleep(random.randint(10,30))
+            await asyncio.sleep(random.randint(300,1800))
+            #await asyncio.sleep(random.randint(10,30))
             if server[3]:
                 await self.bot.delete_message(server[3])
                 server[3] = None
@@ -36,9 +35,11 @@ class Holidays:
                 msg = "Gobble Gobble! {} just found a turkey!\n".format(ctx.message.author.name)
                 
                 for user in self.database.GetFields("Holidays", ["ServerID"], [ctx.message.server.id], ["UserID", "Turkeys"]):
+                    turkey = int(user[1])
                     if user[0] == ctx.message.author.id:
-                        self.database.SetFields("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], [str(int(user[1])+1)])
-                        msg += "{}: {}\n".format(server[0].get_member(user[0]).name, ":turkey:" * (int(user[1])+1))
+                        turkey += 1
+                        self.database.SetFields("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], [str(turkey)])
+                    msg += "{}: {}\n".format(server[0].get_member(user[0]).name, ":turkey:" * (turkey))
                     
                 await self.bot.send_message(server[2], msg)
                 
