@@ -11,6 +11,8 @@ class Holidays:
         #server, enabled, channel, message
         self.turkeys = []
         
+        self.lock = asyncio.Lock()
+        
     async def turkeyGame(self, server):
         textChannels = []
         for chan in server[0].channels:
@@ -26,27 +28,31 @@ class Holidays:
         
     @commands.command(pass_context=True)
     async def turkey(self, ctx):
-        for server in self.turkeys:
-            if server[3] and server[3].channel.id == ctx.message.channel.id:
-                #if they arent on the list add them
-                if not self.database.FieldExists("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id]):
-                    self.database.AddEntry("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], ["0"])
-                     
-                msg = "Gobble Gobble! {} just found a turkey!\n".format(ctx.message.author.name)
-                
-                for user in self.database.GetFields("Holidays", ["ServerID"], [ctx.message.server.id], ["UserID", "Turkeys"]):
-                    turkey = int(user[1])
-                    if user[0] == ctx.message.author.id:
-                        turkey += 1
-                        self.database.SetFields("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], [str(turkey)])
-                    msg += "{}: {}\n".format(server[0].get_member(user[0]).name, ":turkey:" * (turkey))
+        await self.lock.acquire()
+        try:
+            for server in self.turkeys:
+                if server[3] and server[3].channel.id == ctx.message.channel.id:
+                    #if they arent on the list add them
+                    if not self.database.FieldExists("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id]):
+                        self.database.AddEntry("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], ["0"])
+                         
+                    msg = "Gobble Gobble! {} just found a turkey!\n".format(ctx.message.author.name)
                     
-                await self.bot.send_message(server[2], msg)
-                
-                await self.bot.delete_message(server[3])
-                server[3] = None
-                await self.bot.delete_message(ctx.message)
-            
+                    for user in self.database.GetFields("Holidays", ["ServerID"], [ctx.message.server.id], ["UserID", "Turkeys"]):
+                        turkey = int(user[1])
+                        if user[0] == ctx.message.author.id:
+                            turkey += 1
+                            self.database.SetFields("Holidays", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Turkeys"], [str(turkey)])
+                        msg += "{}: {}\n".format(server[0].get_member(user[0]).name, ":turkey:" * (turkey))
+                        
+                    await self.bot.send_message(server[2], msg)
+                    
+                    if server[3]:
+                        await self.bot.delete_message(server[3])
+                        server[3] = None
+                    await self.bot.delete_message(ctx.message)
+        finally:
+            self.lock.release()
             
                 
     @commands.command(pass_context=True)
