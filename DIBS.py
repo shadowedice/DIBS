@@ -43,6 +43,9 @@ async def on_ready():
                 else:
                     admin = "False"
                 database.AddEntry("Users", ["ServerID", "UserID"], [server.id, member.id], ["Admin", "Mute", "Iam"], [admin, "False", ""])
+                
+    #add startHoliday to the event loop
+    bot.loop.create_task(bot.get_cog("Holidays").startHoliday())
     
 if Token.DiscordToken():
     bot.run(Token.DiscordToken())

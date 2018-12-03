@@ -8,7 +8,8 @@ class Database:
         
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Users (ServerID, UserID, Admin, Mute, Iam)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID, Name, File, Text, Count, Mute)")
-        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Holidays (ServerID, UserID, Turkeys)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID, UserID, Bag, Gift, Coal, OpenedBags, TotalBags)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS HolidayChannels (ServerID, ChannelID)")
         
         
     def SetFields(self, table, keys, kvals, fields, fvals):
@@ -20,6 +21,7 @@ class Database:
             ret = True
         else:
             ret = self.AddEntry(table, keys, kvals, fields, fvals)
+            print("trying to add")
         return ret
 
     def GetFields(self, table, keys, kvals, fields):
@@ -51,10 +53,8 @@ class Database:
     def __ColStr(self, cols):
         col = ""
         for c in cols:
-            col = col + "\"" + c + "\""
-            if c is not cols[-1]:
-                col = col + ", "
-        return col
+            col = col + "\"" + c + "\", "
+        return col[:-2]
         
     def __ColVal(self, cols, cvals, isKey):
         if len(cols) != len(cvals):
