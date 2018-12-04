@@ -24,6 +24,9 @@ class User:
                 elif len(params) == 2 and params[0] == "admin":
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["True"]):
                         await self.bot.say("Added admin {}".format(params[1]))
+                elif len(params) == 1 and params[0] == "holidayChannel":
+                    if self.database.AddEntry("HolidayChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], [], []):
+                        await self.bot.say("Added this channel for holiday games!")
             elif cmd == 'remove':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.removeCommand(ctx.message.server.id, params[1]):
@@ -31,6 +34,9 @@ class User:
                 elif len(params) == 2 and params[0] == "admin":
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["False"]):
                         await self.bot.say("Removed admin {}".format(params[1]))
+                elif len(params) == 1 and params[0] == "holidayChannel":
+                    if self.database.RemoveEntry("HolidayChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id]):
+                        await self.bot.say("Removed this channel from holiday games!")
             elif cmd == 'mute':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.muteCommand(ctx.message.server.id, params[1], "True"):
