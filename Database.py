@@ -8,7 +8,7 @@ class Database:
         
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Users (ServerID, UserID, Admin, Mute, Iam)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID, Name, File, Text, Count, Mute)")
-        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID, UserID, Bag INT, Gift INT, Coal INT, OpenedBags INT, TotalBags INT)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID, UserID, Bag INT, Gift INT, Coal INT, OpenedBags INT, TotalBags INT, DibsGifts INT)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS HolidayChannels (ServerID, ChannelID)")
         
         
@@ -27,6 +27,11 @@ class Database:
         #print("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
         self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
         return self.sqlDB.fetchall()
+        
+    def GetField(self, table, keys, kvals, fields):
+        #print("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
+        self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
+        return self.sqlDB.fetchone()
                 
     def AddEntry(self, table, keys, kvals, fields, fvals):
         #print("INSERT INTO {tn} ({c}) VALUES ({val})".format(tn=table, c = self.__ColStr(keys + fields), val = self.__ColStr(kvals + fvals)))

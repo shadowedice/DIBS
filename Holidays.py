@@ -10,7 +10,7 @@ class Holidays:
         self.database = database
         self.lock = asyncio.Lock()
         self.messages = []
-        self.dynamicFactor = 4.1
+        self.dynamicFactor = 4.5
         
                
     async def startHoliday(self):
@@ -46,7 +46,7 @@ class Holidays:
                     self.messages.append(message)
             #await asyncio.sleep(random.randint(1800,3600))
             await asyncio.sleep(random.randint(10,11))
-            self.dynamicFactor = max(3.0, self.dynamicFactor - 0.01)
+            self.dynamicFactor = max(3.0, self.dynamicFactor - 0.05)
             
             for message in self.messages:
                 await self.bot.send_message(message.channel, "It looks like the grinch found what he left behind...")
@@ -61,7 +61,7 @@ class Holidays:
                 if msg.channel.id == ctx.message.channel.id and itemCount == count:
                     #if they arent on the list add them
                     if not self.database.FieldExists("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id]):
-                        self.database.AddEntry("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"], [0, 0, 0, 0, 0])
+                        self.database.AddEntry("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags", "DibsGifts"], [0, 0, 0, 0, 0, 0])
                     
                     text = "{} recovered {} x {}!\n".format(ctx.message.author.name, item, itemCount)
                     
@@ -79,7 +79,7 @@ class Holidays:
                             elif item == ":new_moon:":
                                 coal += itemCount
                             self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "TotalBags"], [bags, gifts, coal, totalBags])
-                        text += "{}: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(ctx.message.server.get_member(user[0]).name, bags, gifts, coal)
+                        text += self.__itemSummary(ctx.message.server.get_member(user[0]).name, bags, gifts, coal)
                     await self.bot.say(text)
                     removeMsg = msg
                             
@@ -103,28 +103,28 @@ class Holidays:
             
     @commands.command(pass_context=True)
     async def openBags(self, ctx, amount : int):
-        user = self.database.GetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"])
+        user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"])
         if user:
-            bags = user[0][0]
-            gifts = user[0][1]
-            coal = user[0][2]
+            bags = user[0]
             if bags >= amount and bags > 0:
-                openedBag = user[0][3]
-                coalTotal = 0
-                giftTotal = 0
+                gifts = user[1]
+                coal = user[2]
+                openedBag = user[3]
+                coalGain = 0
+                giftGain = 0
                 for x in range(amount):
-                    factor = min(max(0.1, (openedBag / user[0][4])), 0.9)
+                    factor = min(max(0.1, (openedBag / user[4])), 0.9)
                     if factor >= random.random():
                         coal += 1
-                        coalTotal += 1
+                        coalGain += 1
                     else:
                         gifts += 2
-                        giftTotal += 2
+                        giftGain += 2
                     openedBag += 1
                 bags -= amount
                 self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags"], [bags, gifts, coal, openedBag])
-                msg = "{}! You managed to find :gift: x {} and :new_moon: x {}!\n".format(ctx.message.author.name, giftTotal, coalTotal)
-                msg += "New totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(bags, gifts, coal)
+                msg = "{}! You managed to find :gift: x {} and :new_moon: x {}!\n".format(ctx.message.author.name, giftGain, coalGain)
+                msg += self.__itemSummary(ctx.message.author.name, bags, gifts, coal)
                 await self.bot.say(msg)
             else:
                 await self.bot.say("I'm afraid you don't have enough bags to open.")
@@ -132,28 +132,28 @@ class Holidays:
     
     @commands.command(pass_context=True)
     async def convertBags(self, ctx, amount : int):
-        user = self.database.GetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
+        user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
-            bags = user[0][0]
+            bags = user[0]
             if bags >= amount and bags > 0:
-                gifts = amount + user[0][1]
+                gifts = amount + user[1]
                 bags -= amount
                 self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift"], [bags, gifts])
                 msg = "{}! :santa: used his magic to make :gift: x {}!\n".format(ctx.message.author.name, amount)
-                msg += "New totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(bags, gifts, user[0][2])
+                msg += self.__itemSummary(ctx.message.author.name, bags, gifts, user[2])
                 await self.bot.say(msg)
             else:
                 await self.bot.say("I'm afraid you don't have enough bags to give.")
     
     @commands.command(pass_context=True)
     async def convertCoal(self, ctx, amount : int):
-        user = self.database.GetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
+        user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
-            coal = user[0][2]
+            coal = user[2]
             if coal >= amount and coal > 0:
                 if amount >= int(self.dynamicFactor):
                     newGifts = 0
-                    gifts = user[0][1]
+                    gifts = user[1]
                     usedCoal = 0
                     while amount >= int(self.dynamicFactor):
                         newGifts += 1
@@ -164,7 +164,7 @@ class Holidays:
                     coal -= usedCoal
                     self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Gift", "Coal"], [gifts, coal])
                     msg = "{}! :santa: used his magic to make :gift: x {} from :new_moon: x {}!\n".format(ctx.message.author.name, newGifts, usedCoal)
-                    msg += "New totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(user[0][0], gifts, coal)
+                    msg += self.__itemSummary(ctx.message.author.name, user[0], gifts, coal)
                     await self.bot.say(msg)
                 else:
                     await self.bot.say("I'm afraid you didn't give enough coal to make a gift.")
@@ -178,37 +178,47 @@ class Holidays:
             
     @commands.command(pass_context=True)
     async def stealGifts(self, ctx, person : discord.Member):
-        user = self.database.GetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
+        user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
-            gifts = max(user[0][1] - 5, -2)
+            gifts = max(user[1] - 5, -2)
             self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Gift"], [gifts])
-            msg = ":santa: Oh ho ho ho! We have a grinch here!\n{}, you are going to need to give me some extra presents to make up for this!\n".format(ctx.message.author.name)
-            msg += "You lost :gift: x {}!\n".format((user[0][1]-gifts))
-            msg += "New totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(user[0][0], gifts, user[0][2])
+            msg = ":santa: Oh ho ho ho! We have a grinch here!\n"
+            msg += "{}, you are going to need to give me some extra presents to make up for this!\n".format(ctx.message.author.name)
+            msg += "You lost :gift: x {}!\n".format((user[1]-gifts))
+            msg += self.__itemSummary(ctx.message.author.name, user[0], gifts, user[2])
             await self.bot.say(msg)
 
     @commands.command(pass_context=True)
     async def giveGifts(self, ctx, person : discord.Member, count : int):
-        donor = self.database.GetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
-        receiver = self.database.GetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Bag", "Gift", "Coal"])
+        donor = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "DibsGifts"])
+        receiver = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Bag", "Gift", "Coal"])
         if donor and ctx.message.author.id != person.id:
-            if donor[0][1] >= count and count > 0:
-                donorGifts = donor[0][1] - count
+            if donor[1] >= count and count > 0:
+                donorGifts = donor[1] - count
                 msg = ":santa: Oh ho ho! What a giving spirit! {} just gave {} :gift: x {}\n".format(ctx.message.author.name, person.name, count)
-                msg += "{} new totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(ctx.message.author.name, donor[0][0], donorGifts, donor[0][2])
+                msg += self.__itemSummary(ctx.message.author.name, donor[0], donorGifts, donor[2])
                 self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Gift"], [donorGifts])
                 
                 if receiver:
-                    receiverGifts = receiver[0][1] + count
+                    receiverGifts = receiver[1] + count
                     self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Gift"], [receiverGifts])
-                    msg += "{} new totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(person.name, receiver[0][0], receiverGifts, receiver[0][2])
+                    msg += self.__itemSummary(person.name, receiver[0], receiverGifts, receiver[2])
                 else:
-                    self.database.AddEntry("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"], [0, count, 0, 0, 0])
-                    msg += "{} new totals: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(person.name, 0, count, 0)
+                    self.database.AddEntry("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags", "DibsGifts"], [0, count, 0, 0, 0, 0])
+                    msg += self.__itemSummary(person.name, 0, count, 0)
                 await self.bot.say(msg)
+                
+                if person.id == self.bot.user.id:
+                    dGifts = count
+                    if donor[3]:
+                        dGifts += donor[3]
+                    self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["DibsGifts"], [dGifts])
                 
             else:
                 await self.bot.say("I'm sorry, but you don't have that many :gift: to give.")
+                
+    def __itemSummary(self, name, bags, gifts, coal):
+        return "{}: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(name, bags, gifts, coal)
                     
                 
                 
