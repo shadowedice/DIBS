@@ -10,7 +10,7 @@ class Holidays:
         self.database = database
         self.lock = asyncio.Lock()
         self.messages = []
-        self.dynamicFactor = 4.5
+        self.dynamicFactor = 5.1
         
                
     async def startHoliday(self):
@@ -44,8 +44,8 @@ class Holidays:
                         
                     message = await self.bot.send_message(server.get_channel(random.choice(channels)[0]), msg)
                     self.messages.append(message)
-            #await asyncio.sleep(random.randint(1800,3600))
-            await asyncio.sleep(random.randint(10,11))
+            await asyncio.sleep(random.randint(1800,3600))
+            #await asyncio.sleep(random.randint(10,11))
             self.dynamicFactor = max(3.0, self.dynamicFactor - 0.05)
             
             for message in self.messages:
@@ -106,7 +106,7 @@ class Holidays:
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"])
         if user:
             bags = user[0]
-            if bags >= amount and bags > 0:
+            if bags >= amount and amount > 0:
                 gifts = user[1]
                 coal = user[2]
                 openedBag = user[3]
@@ -135,7 +135,7 @@ class Holidays:
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             bags = user[0]
-            if bags >= amount and bags > 0:
+            if bags >= amount and amount > 0:
                 gifts = amount + user[1]
                 bags -= amount
                 self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift"], [bags, gifts])
@@ -150,7 +150,7 @@ class Holidays:
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             coal = user[2]
-            if coal >= amount and coal > 0:
+            if coal >= amount and amount > 0:
                 if amount >= int(self.dynamicFactor):
                     newGifts = 0
                     gifts = user[1]
@@ -209,9 +209,7 @@ class Holidays:
                 await self.bot.say(msg)
                 
                 if person.id == self.bot.user.id:
-                    dGifts = count
-                    if donor[3]:
-                        dGifts += donor[3]
+                    dGifts = donor[3] + count
                     self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["DibsGifts"], [dGifts])
                 
             else:
