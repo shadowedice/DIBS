@@ -1,8 +1,14 @@
 import discord
 from discord.ext import commands
 from datetime import date
+from operator import itemgetter
 import asyncio
 import random
+
+THANKSGIVING_MONTH = 11
+THANKSGIVING_DAY = 28
+CHRISTMAS_MONTH = 12
+CHRISTMAS_DAY = 25
 
 class Holidays:
     def __init__(self, bot, database):
@@ -11,13 +17,18 @@ class Holidays:
         self.lock = asyncio.Lock()
         self.messages = []
         self.dynamicFactor = 5.1
+        self.currentGame = ""
         
                
     async def startHoliday(self):
-        if date.today().month == 11:
+        if date.today().month == THANKSGIVING_MONTH:
+            self.currentGame = "Thanksgiving"
             await self.thanksgivingGame()
-        elif date.today().month == 12:
+        elif date.today().month == CHRISTMAS_MONTH and date.today().day < CHRISTMAS_DAY:
+            self.currentGame = "Christmas"
             await self.christmasGame()
+        else:
+            self.currentGame = ""
         
             
     async def thanksgivingGame(self):
@@ -29,7 +40,7 @@ class Holidays:
     
         
     async def christmasGame(self):
-        while date.today().month == 12 and date.today().day < 25:
+        while self.currentGame == "Christmas":
             for server in self.bot.servers:
                 channels = self.database.GetFields("HolidayChannels", ["ServerID"], [server.id], ["ChannelID"])
                 if channels:
@@ -52,7 +63,12 @@ class Holidays:
                 await self.bot.send_message(message.channel, "It looks like the grinch found what he left behind...")
             self.messages.clear()
             
+            if date.today().day >= CHRISTMAS_DAY:
+                self.currentGame = ""
+            
     async def acquireItem(self, ctx, count, item):
+        if not await self.__checkForGame("Christmas"):
+            return
         await self.lock.acquire()
         try:
             removeMsg = None
@@ -65,7 +81,8 @@ class Holidays:
                     
                     text = "{} recovered {} x {}!\n".format(ctx.message.author.name, item, itemCount)
                     
-                    for user in self.database.GetFields("Christmas", ["ServerID"], [ctx.message.server.id], ["UserID", "Bag", "Gift", "Coal", "TotalBags"]):
+                    users = self.database.GetFields("Christmas", ["ServerID"], [ctx.message.server.id], ["UserID", "Bag", "Gift", "Coal", "TotalBags"])
+                    for user in sorted(users, key=itemgetter(2), reverse=True):
                         bags = user[1]
                         gifts = user[2]
                         coal = user[3]
@@ -103,6 +120,8 @@ class Holidays:
             
     @commands.command(pass_context=True)
     async def openBags(self, ctx, amount : int):
+        if not await self.__checkForGame("Christmas"):
+            return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"])
         if user:
             bags = user[0]
@@ -132,6 +151,8 @@ class Holidays:
     
     @commands.command(pass_context=True)
     async def convertBags(self, ctx, amount : int):
+        if not await self.__checkForGame("Christmas"):
+            return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             bags = user[0]
@@ -147,6 +168,8 @@ class Holidays:
     
     @commands.command(pass_context=True)
     async def convertCoal(self, ctx, amount : int):
+        if not await self.__checkForGame("Christmas"):
+            return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             coal = user[2]
@@ -174,10 +197,14 @@ class Holidays:
     
     @commands.command()        
     async def coalMagic(self):
+        if not await self.__checkForGame("Christmas"):
+            return
         await self.bot.say(":santa: says it would take around :new_moon: x {} to make you one :gift:!".format(int(self.dynamicFactor)))
             
     @commands.command(pass_context=True)
     async def stealGifts(self, ctx, person : discord.Member):
+        if not await self.__checkForGame("Christmas"):
+            return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             gifts = max(user[1] - 5, -2)
@@ -190,6 +217,8 @@ class Holidays:
 
     @commands.command(pass_context=True)
     async def giveGifts(self, ctx, person : discord.Member, count : int):
+        if not await self.__checkForGame("Christmas"):
+            return
         donor = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal", "DibsGifts"])
         receiver = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id], ["Bag", "Gift", "Coal"])
         if donor and ctx.message.author.id != person.id:
@@ -217,6 +246,13 @@ class Holidays:
                 
     def __itemSummary(self, name, bags, gifts, coal):
         return "{}: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(name, bags, gifts, coal)
+        
+    async def __checkForGame(self, game):
+        if game == self.currentGame:
+            return True
+        else:
+            await self.bot.say("I'm afraid it isn't the time of the year for that command")
+            return False
                     
                 
                 
