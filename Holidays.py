@@ -40,7 +40,7 @@ class Holidays:
     
         
     async def christmasGame(self):
-        while self.currentGame == "Christmas":
+        while self.currentGame == "Christmas" and not self.bot.is_closed:
             for server in self.bot.servers:
                 channels = self.database.GetFields("HolidayChannels", ["ServerID"], [server.id], ["ChannelID"])
                 if channels:
