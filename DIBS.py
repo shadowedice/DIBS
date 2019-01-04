@@ -9,6 +9,8 @@ from User import User
 from Database import Database
 from Holidays import Holidays
 import Token
+import asyncio
+from contextlib import suppress
 
 if not discord.opus.is_loaded():
     discord.opus.load_opus("libopus.so")
@@ -46,8 +48,21 @@ async def on_ready():
                 
     #add startHoliday to the event loop
     bot.loop.create_task(bot.get_cog("Holidays").startHoliday())
+
     
 if Token.DiscordToken():
-    bot.run(Token.DiscordToken())
+    try:
+        bot.loop.run_until_complete(bot.start(Token.DiscordToken()))
+    except:
+        bot.loop.run_until_complete(bot.logout())
+        #get all pending tasks and cancel them
+        pending = asyncio.Task.all_tasks()
+        for task in pending:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                bot.loop.run_until_complete(task)
+    finally:
+        bot.loop.close()
+
 else:
     print("No token found. Unable to start DIBS")

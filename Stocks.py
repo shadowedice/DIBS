@@ -1,5 +1,5 @@
 from discord.ext import commands
-import urllib.request as ur
+import aiohttp
 import json
 
 
@@ -14,10 +14,10 @@ class Stocks:
         #Insurance against typical Greg shenanigans
         if name.lower() == 'greg':
             await self.bot.say('Greg is currently valued at $0.00. How sad.')
-            return
         else:
-            data = json.loads(ur.urlopen('https://api.iextrading.com/1.0/stock/' + name + '/quote').read().decode('utf-8'))
-            if 'Error Message' in data:
-                await self.bot.say("I'm sorry but I can't find {} ticker!".format(name.upper()))
-                return
-            await self.bot.say("{} ({})\nLast Updated: {}\nValue: ${}".format(data['companyName'], name.upper(), data['latestTime'], data['latestPrice']))
+            async with aiohttp.request('GET', 'https://api.iextrading.com/1.0/stock/' + name + '/quote') as resp:
+                try:
+                    tickerInfo = json.loads(await resp.text())
+                    await self.bot.say("{} ({})\nLast Updated: {}\nValue: ${}".format(tickerInfo['companyName'], name.upper(), tickerInfo['latestTime'], tickerInfo['latestPrice']))
+                except:
+                    await self.bot.say("I'm sorry but I can't find {} ticker!".format(name.upper()))
