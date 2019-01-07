@@ -8,6 +8,7 @@ from SoundBoard import SoundBoard
 from User import User
 from Database import Database
 from Holidays import Holidays
+from Twitch import Twitch
 import Token
 import asyncio
 from contextlib import suppress
@@ -21,6 +22,7 @@ database = Database()
 soundBoard = SoundBoard(bot,database)
 user = User(bot, database, soundBoard)
 holidays = Holidays(bot, database)
+twitch = Twitch(bot, database, Token.TwitchApiId())
 
 bot.add_cog(Stocks(bot))
 bot.add_cog(MagicCard(bot))
@@ -29,6 +31,7 @@ bot.add_cog(Overwatch(bot))
 bot.add_cog(soundBoard)
 bot.add_cog(user)
 bot.add_cog(holidays)
+bot.add_cog(twitch)
 
 
 @bot.event
@@ -48,6 +51,7 @@ async def on_ready():
                 
     #add startHoliday to the event loop
     bot.loop.create_task(bot.get_cog("Holidays").startHoliday())
+    bot.loop.create_task(bot.get_cog("Twitch").checkTwitch())
 
     
 if Token.DiscordToken():
@@ -61,6 +65,8 @@ if Token.DiscordToken():
             task.cancel()
             with suppress(asyncio.CancelledError):
                 bot.loop.run_until_complete(task)
+                
+        bot.loop.run_until_complete(twitch.closeSession())
     finally:
         bot.loop.close()
 

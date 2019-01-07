@@ -44,7 +44,7 @@ class Holidays:
             waitTime = 0
             #Just get the first channel, dont care about others
             for server in self.bot.servers:
-                channel = self.database.GetField("HolidayChannels", ["ServerID"], [server.id], ["ChannelID"])
+                channel = self.database.GetField("BotChannels", ["ServerID", "Type"], [server.id, "Holiday"], ["ChannelID"])
                 if channel:
                     await self.bot.send_message(server.get_channel(channel[0]), "DRINK!!! :beer: :beers: :wine_glass: :champagne: :champagne_glass:")
                     
@@ -71,7 +71,7 @@ class Holidays:
     async def christmasGame(self):
         while self.currentGame == "Christmas" and not self.bot.is_closed:
             for server in self.bot.servers:
-                channels = self.database.GetFields("HolidayChannels", ["ServerID"], [server.id], ["ChannelID"])
+                channel = self.database.GetField("BotChannels", ["ServerID", "Type"], [server.id, "Holiday"], ["ChannelID"])
                 if channels:
                     randVal = random.randint(0,2)
                     msg = ""

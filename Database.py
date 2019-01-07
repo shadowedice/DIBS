@@ -6,10 +6,10 @@ class Database:
         self.connection = sqlite3.connect(self.file)
         self.sqlDB = self.connection.cursor()
         
-        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Users (ServerID, UserID, Admin, Mute, Iam)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Users (ServerID, UserID, Admin, Mute, Iam, Twitch)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID, Name, File, Text, Count, Mute)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID, UserID, Bag INT, Gift INT, Coal INT, OpenedBags INT, TotalBags INT, DibsGifts INT)")
-        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS HolidayChannels (ServerID, ChannelID)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS BotChannels (ServerID, ChannelID, Type)")
         
         
     def SetFields(self, table, keys, kvals, fields, fvals):
@@ -25,7 +25,12 @@ class Database:
 
     def GetFields(self, table, keys, kvals, fields):
         #print("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
-        self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
+        if kvals == 'null':
+            self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColValNull(keys, True)))
+        elif kvals == 'notNull':
+            self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColValNull(keys, False)))
+        else:
+            self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
         return self.sqlDB.fetchall()
         
     def GetField(self, table, keys, kvals, fields):
@@ -73,3 +78,14 @@ class Database:
                     else:
                         ret = ret + ", "
             return ret
+            
+    def __ColValNull(self, cols, isNull):
+        ret = ""
+        for x in range(len(cols)):
+            if isNull:
+                ret = ret + cols[x] + " IS NULL"
+            else:
+                ret = ret + cols[x] + " IS NOT NULL"
+            if x+1 != len(cols):
+                ret = ret + " AND "
+        return ret  

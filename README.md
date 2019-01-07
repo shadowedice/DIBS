@@ -34,8 +34,8 @@ Command | Description | Usage
 ### Admin
 Command | Description | Usage
 --------|--------------|-------
-`$admin add` | Adds an admin, sb, holidayChannel (Creates admin if one doesnt exist) | $admin add sb test test.mp3
-`$admin remove` | Removes an admin, sb, holidayChannel | $admin remove sb test
+`$admin add` | Adds an admin, sb, holidayChannel, twitchChannel (Creates admin if one doesnt exist) | $admin add sb test test.mp3
+`$admin remove` | Removes an admin, sb, holidayChannel, twitchChannel | $admin remove sb test
 `$admin mute` | Mutes a user or sb | $admin mute sb test
 `$admin unmute` | Unmutes a user or sb | $admin unmute sb test
 `$admin update` | updates a whois | $admin update whois @name name
@@ -60,3 +60,9 @@ Command | Description | Usage
 `$stealGifts` | Steals gifts from another user...or does it? | $stealGifts @ShadowedIce
 `$giveGifts` | Gives gifts to another user | $giveGifts @ShadowedIce 2
 `$christmasScore` | Checks the score board for the christmas game | $christmasScore
+
+## Twitch
+Command | Description | Usage
+--------|--------------|-------
+`$addTwitch` | Adds your name to the list of twitch streamers. Will periodically check if live. | $addTwitch shadowedice
+`$removeTwitch` | Removes your name from the list of twitch streamers.  | $removeTwitch

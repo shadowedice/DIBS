@@ -25,8 +25,11 @@ class User:
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["True"]):
                         await self.bot.say("Added admin {}".format(params[1]))
                 elif len(params) == 1 and params[0] == "holidayChannel":
-                    if self.database.AddEntry("HolidayChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], [], []):
+                    if self.database.AddEntry("BotChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], ['Type'], ['Holiday']):
                         await self.bot.say("Added this channel for holiday games!")
+                elif len(params) == 1 and params[0] == "twitchChannel":
+                    if self.database.AddEntry("BotChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], ['Type'], ['Twitch']):
+                        await self.bot.say("Added this channel for Twitch updates!")
             elif cmd == 'remove':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.removeCommand(ctx.message.server.id, params[1]):
@@ -35,8 +38,11 @@ class User:
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["False"]):
                         await self.bot.say("Removed admin {}".format(params[1]))
                 elif len(params) == 1 and params[0] == "holidayChannel":
-                    if self.database.RemoveEntry("HolidayChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id]):
+                    if self.database.RemoveEntry("BotChannels", ["ServerID", "ChannelID", "Type"], [ctx.message.server.id, ctx.message.channel.id, "Holiday"]):
                         await self.bot.say("Removed this channel from holiday games!")
+                elif len(params) == 1 and params[0] == "twitchChannel":
+                    if self.database.RemoveEntry("BotChannels", ["ServerID", "ChannelID", "Type"], [ctx.message.server.id, ctx.message.channel.id, "Twitch"]):
+                        await self.bot.say("Removed this channel from twitch updates.")
             elif cmd == 'mute':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.muteCommand(ctx.message.server.id, params[1], "True"):
