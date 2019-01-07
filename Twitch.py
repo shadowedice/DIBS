@@ -39,7 +39,7 @@ class Twitch:
                                 self.onlineUsers.append(user + (message.id,))
                             #Is in list, check for updates
                             else:
-                                await self.bot.edit_message(server.get_channel(channel[0]), msgText)
+                                await self.bot.edit_message(await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3]), msgText)
                         #Not live
                         else:
                             #Was in live list
