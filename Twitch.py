@@ -39,7 +39,9 @@ class Twitch:
                                 self.onlineUsers.append(user + (message.id,))
                             #Is in list, check for updates
                             else:
-                                await self.bot.edit_message(await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3]), msgText)
+                                curMsg = await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3])
+                                if curMsg.content != msgText:
+                                    await self.bot.edit_message(curMsg, msgText)
                         #Not live
                         else:
                             #Was in live list
@@ -50,7 +52,7 @@ class Twitch:
                 if self.requests > TWITCH_LIMIT:
                     await asynico.sleep(60)
                     self.requests = 0
-            await asyncio.sleep(120)
+            await asyncio.sleep(10)
             
     @commands.command(pass_context=True)
     async def addTwitch(self, ctx, name : str):
