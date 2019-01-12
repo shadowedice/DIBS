@@ -34,9 +34,8 @@ class Database:
         return self.sqlDB.fetchall()
         
     def GetField(self, table, keys, kvals, fields):
-        #print("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
-        self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
-        return self.sqlDB.fetchone()
+        #return the first field found
+        return self.GetFields(table, keys, kvals, fields)[0]
                 
     def AddEntry(self, table, keys, kvals, fields, fvals):
         #print("INSERT INTO {tn} ({c}) VALUES ({val})".format(tn=table, c = self.__ColStr(keys + fields), val = self.__ColStr(kvals + fvals)))

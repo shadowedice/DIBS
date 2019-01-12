@@ -71,7 +71,7 @@ class Holidays:
     async def christmasGame(self):
         while self.currentGame == "Christmas" and not self.bot.is_closed:
             for server in self.bot.servers:
-                channel = self.database.GetField("BotChannels", ["ServerID", "Type"], [server.id, "Holiday"], ["ChannelID"])
+                channels = self.database.GetFields("BotChannels", ["ServerID", "Type"], [server.id, "Holiday"], ["ChannelID"])
                 if channels:
                     randVal = random.randint(0,2)
                     msg = ""

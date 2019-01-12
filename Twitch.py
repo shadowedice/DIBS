@@ -30,24 +30,28 @@ class Twitch:
                         curUser = [x for x in self.onlineUsers if x[0] == user[0] and x[1] == user[1] and x[2] == user[2]]
                         server = self.bot.get_server(user[0])
                         #If live
-                        if json['data']:
-                            gameID = json['data'][0]['game_id']
-                            msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\n https://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
-                            #if not in the current user list
-                            if not curUser:
-                                message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
-                                self.onlineUsers.append(user + (message.id,))
-                            #Is in list, check for updates
+                        try:
+                            if json['data']:
+                                gameID = json['data'][0]['game_id']
+                                msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\n https://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
+                                #if not in the current user list
+                                if not curUser:
+                                    message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
+                                    self.onlineUsers.append(user + (message.id,))
+                                #Is in list, check for updates
+                                else:
+                                    curMsg = await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3])
+                                    if curMsg.content != msgText:
+                                        await self.bot.edit_message(curMsg, msgText)
+                            #Not live
                             else:
-                                curMsg = await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3])
-                                if curMsg.content != msgText:
-                                    await self.bot.edit_message(curMsg, msgText)
-                        #Not live
-                        else:
-                            #Was in live list
-                            if curUser:
-                                await self.bot.delete_message(await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3]))
-                                self.onlineUsers.remove(curUser[0])
+                                #Was in live list
+                                if curUser:
+                                    await self.bot.delete_message(await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3]))
+                                    self.onlineUsers.remove(curUser[0])
+                        except KeyError:
+                            print("Data not found in response")
+                            print(json)
                                 
                 if self.requests > TWITCH_LIMIT:
                     await asynico.sleep(60)
@@ -59,11 +63,16 @@ class Twitch:
         if self.session:
             async with self.session.get('https://api.twitch.tv/helix/users?login=' + name) as resp:
                 json = await resp.json()
-                if json['data']:
-                    self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Twitch"], [name])
-                    await self.bot.say("I set your twitch name to:  " + name )
-                else:
-                    await self.bot.say("I'm sorry but I cant find the username: " + name )
+                try:
+                    if json['data']:
+                        self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Twitch"], [name])
+                        await self.bot.say("I set your twitch name to:  " + name )
+                    else:
+                        await self.bot.say("I'm sorry but I cant find the username: " + name )
+                    
+                except KeyError:
+                    print("Data not found in response")
+                    print(json)
         else:
             await self.bot.say("I'm still setting up")
         
@@ -81,9 +90,15 @@ class Twitch:
             async with self.session.get('https://api.twitch.tv/helix/games?id=' + gameID) as resp:
                 self.requests += 1
                 json = await resp.json()
-                if json['data']:
-                    name = json['data'][0]['name']
-                    self.gamesDict[gameID] = name
+                try:
+                    if json['data']:
+                        name = json['data'][0]['name']
+                        self.gamesDict[gameID] = name
+                        return name
+                        
+                except KeyError:
+                    print("Data not found in response")
+                    print(json)
                     return name
         else:
             return self.gamesDict[gameID]
