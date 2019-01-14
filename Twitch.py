@@ -33,7 +33,7 @@ class Twitch:
                         try:
                             if json['data']:
                                 gameID = json['data'][0]['game_id']
-                                msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\n https://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
+                                msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\nhttps://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
                                 #if not in the current user list
                                 if not curUser:
                                     message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
@@ -56,7 +56,7 @@ class Twitch:
                 if self.requests > TWITCH_LIMIT:
                     await asynico.sleep(60)
                     self.requests = 0
-            await asyncio.sleep(10)
+            await asyncio.sleep(60)
             
     @commands.command(pass_context=True)
     async def addTwitch(self, ctx, name : str):

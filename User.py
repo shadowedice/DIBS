@@ -25,10 +25,10 @@ class User:
                     if self.database.SetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, self.__stripId(params[1])], ["Admin"], ["True"]):
                         await self.bot.say("Added admin {}".format(params[1]))
                 elif len(params) == 1 and params[0] == "holidayChannel":
-                    if self.database.AddEntry("BotChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], ['Type'], ['Holiday']):
+                    if self.database.SetFields("BotChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], ['Type'], ['Holiday']):
                         await self.bot.say("Added this channel for holiday games!")
                 elif len(params) == 1 and params[0] == "twitchChannel":
-                    if self.database.AddEntry("BotChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], ['Type'], ['Twitch']):
+                    if self.database.SetFields("BotChannels", ["ServerID", "ChannelID"], [ctx.message.server.id, ctx.message.channel.id], ['Type'], ['Twitch']):
                         await self.bot.say("Added this channel for Twitch updates!")
             elif cmd == 'remove':
                 if len(params) == 2 and params[0] == "sb":

@@ -35,13 +35,20 @@ class Database:
         
     def GetField(self, table, keys, kvals, fields):
         #return the first field found
-        return self.GetFields(table, keys, kvals, fields)[0]
+        fields = self.GetFields(table, keys, kvals, fields)
+        if fields:
+            return fields[0]
+        else:
+            return []
                 
     def AddEntry(self, table, keys, kvals, fields, fvals):
         #print("INSERT INTO {tn} ({c}) VALUES ({val})".format(tn=table, c = self.__ColStr(keys + fields), val = self.__ColStr(kvals + fvals)))
         self.sqlDB.execute("INSERT INTO {tn} ({c}) VALUES ({val})".format(tn=table, c = self.__ColStr(keys + fields), val = self.__ColStr(kvals + fvals)))
         self.connection.commit()
-        return True
+        if self.sqlDB.rowcount > 0:
+            return True
+        else:
+            return False
         
     def FieldExists(self, table, keys, kvals):
         #print("SELECT * FROM {tn} WHERE {kstr}".format(tn=table, kstr=self.__ColVal(keys, kvals, True)))
@@ -56,7 +63,10 @@ class Database:
         #print("DELETE FROM {tn} WHERE {kstr}".format(tn=table, kstr=self.__ColVal(keys, kvals, True)))
         self.sqlDB.execute("DELETE FROM {tn} WHERE {kstr}".format(tn=table, kstr=self.__ColVal(keys, kvals, True)))
         self.connection.commit()
-        return True
+        if self.sqlDB.rowcount > 0:
+            return True
+        else:
+            return False
         
     def __ColStr(self, cols):
         col = ""
