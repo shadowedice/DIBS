@@ -24,34 +24,37 @@ class Twitch:
             for user in self.database.GetFields("Users", ["Twitch"], "notNull", ["ServerId", "UserID", "Twitch"]):
                 channel = self.database.GetField("BotChannels", ["ServerId", "Type"], [user[0], "Twitch"], ["ChannelID"])
                 if channel:
-                    async with self.session.get('https://api.twitch.tv/helix/streams?user_login=' + user[2]) as resp:
-                        self.requests += 1
-                        json = await resp.json()
-                        curUser = [x for x in self.onlineUsers if x[0] == user[0] and x[1] == user[1] and x[2] == user[2]]
-                        server = self.bot.get_server(user[0])
-                        #If live
-                        try:
-                            if json['data']:
-                                gameID = json['data'][0]['game_id']
-                                msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\nhttps://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
-                                #if not in the current user list
-                                if not curUser:
-                                    message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
-                                    self.onlineUsers.append(user + (message.id,))
-                                #Is in list, check for updates
+                    try:
+                        async with self.session.get('https://api.twitch.tv/helix/streams?user_login=' + user[2]) as resp:
+                            self.requests += 1
+                            json = await resp.json()
+                            curUser = [x for x in self.onlineUsers if x[0] == user[0] and x[1] == user[1] and x[2] == user[2]]
+                            server = self.bot.get_server(user[0])
+                            #If live
+                            try:
+                                if json['data']:
+                                    gameID = json['data'][0]['game_id']
+                                    msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\nhttps://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
+                                    #if not in the current user list
+                                    if not curUser:
+                                        message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
+                                        self.onlineUsers.append(user + (message.id,))
+                                    #Is in list, check for updates
+                                    else:
+                                        curMsg = await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3])
+                                        if curMsg.content != msgText:
+                                            await self.bot.edit_message(curMsg, msgText)
+                                #Not live
                                 else:
-                                    curMsg = await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3])
-                                    if curMsg.content != msgText:
-                                        await self.bot.edit_message(curMsg, msgText)
-                            #Not live
-                            else:
-                                #Was in live list
-                                if curUser:
-                                    await self.bot.delete_message(await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3]))
-                                    self.onlineUsers.remove(curUser[0])
-                        except KeyError:
-                            print("Data not found in response")
-                            print(json)
+                                    #Was in live list
+                                    if curUser:
+                                        await self.bot.delete_message(await self.bot.get_message(server.get_channel(channel[0]), curUser[0][3]))
+                                        self.onlineUsers.remove(curUser[0])
+                            except KeyError:
+                                print("Data not found in response")
+                                print(json)
+                    except Exception as e:
+                        print(e)
                                 
                 if self.requests > TWITCH_LIMIT:
                     await asynico.sleep(60)
