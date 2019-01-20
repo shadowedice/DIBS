@@ -57,8 +57,10 @@ async def on_ready():
 if Token.DiscordToken():
     try:
         bot.loop.run_until_complete(bot.start(Token.DiscordToken()))
-    except:
-        bot.loop.run_until_complete(bot.logout())
+    except Exception as e:
+        print("Hit exception in DIBS main")
+        print(e)
+    finally:
         #get all pending tasks and cancel them
         pending = asyncio.Task.all_tasks()
         for task in pending:
@@ -67,7 +69,7 @@ if Token.DiscordToken():
                 bot.loop.run_until_complete(task)
                 
         bot.loop.run_until_complete(twitch.closeSession())
-    finally:
+        bot.loop.run_until_complete(bot.logout())
         bot.loop.close()
 
 else:

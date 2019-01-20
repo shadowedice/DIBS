@@ -42,7 +42,7 @@ class User:
                         await self.bot.say("Removed this channel from holiday games!")
                 elif len(params) == 1 and params[0] == "twitchChannel":
                     if self.database.RemoveEntry("BotChannels", ["ServerID", "ChannelID", "Type"], [ctx.message.server.id, ctx.message.channel.id, "Twitch"]):
-                        await self.bot.say("Removed this channel from twitch updates.")
+                        await self.bot.say("Removed this channel from Twitch updates.")
             elif cmd == 'mute':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.muteCommand(ctx.message.server.id, params[1], "True"):
