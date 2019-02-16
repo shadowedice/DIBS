@@ -10,6 +10,7 @@ class Database:
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID, Name, File, Text, Count, Mute)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID, UserID, Bag INT, Gift INT, Coal INT, OpenedBags INT, TotalBags INT, DibsGifts INT)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS BotChannels (ServerID, ChannelID, Type)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS TwitchGameID (GameID, GameStr)")
         
         
     def SetFields(self, table, keys, kvals, fields, fvals):

@@ -12,7 +12,6 @@ class Twitch:
         self.session = None
         self.requests = 0
         self.onlineUsers = []
-        self.gamesDict = {}
         
         
 
@@ -88,19 +87,15 @@ class Twitch:
         self.session = None
         
     async def __getGameName(self, gameID):
-        if gameID not in self.gamesDict:
+        gamestr = self.database.GetField("TwitchGameID", ["GameID"], [gameID], ["GameStr"])
+        if not gamestr:
             async with self.session.get('https://api.twitch.tv/helix/games?id=' + gameID) as resp:
                 self.requests += 1
-                json = await resp.json()
-                try:
+                if resp.status == 200:
+                    json = await resp.json()
                     if json['data']:
                         name = json['data'][0]['name']
-                        self.gamesDict[gameID] = name
+                        self.database.AddEntry("TwitchGameID", ["GameID", "GameStr"], [gameID, name], [], [])
                         return name
-                        
-                except KeyError:
-                    print("Data not found in response")
-                    print(json)
-                    return name
         else:
-            return self.gamesDict[gameID]
+            return gamestr[0]
