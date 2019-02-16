@@ -11,6 +11,7 @@ class Database:
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID, UserID, Bag INT, Gift INT, Coal INT, OpenedBags INT, TotalBags INT, DibsGifts INT)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS BotChannels (ServerID, ChannelID, Type)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS TwitchGameID (GameID, GameStr)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS TwitchMessages (ServerID, ChannelID, MessageID, UserID)")
         
         
     def SetFields(self, table, keys, kvals, fields, fvals):
@@ -41,6 +42,10 @@ class Database:
             return fields[0]
         else:
             return []
+            
+    def GetTable(self, table, fields):
+         self.sqlDB.execute("SELECT {c} FROM {tn}".format(c = self.__ColStr(fields), tn = table))
+         return self.sqlDB.fetchall()
                 
     def AddEntry(self, table, keys, kvals, fields, fvals):
         #print("INSERT INTO {tn} ({c}) VALUES ({val})".format(tn=table, c = self.__ColStr(keys + fields), val = self.__ColStr(kvals + fvals)))
