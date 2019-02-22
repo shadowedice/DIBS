@@ -18,7 +18,7 @@ class Stocks:
             async with aiohttp.request('GET', 'https://api.iextrading.com/1.0/stock/' + name + '/quote') as resp:
                 try:
                     tickerInfo = json.loads(await resp.text())
-                    change = str(tickerInfo['changePercent'] * 100)
+                    change = str(round(tickerInfo['changePercent'] * 100.0, 2))
                     #add plus sign for positive value
                     if tickerInfo['changePercent'] > 0:
                         change = "+" + change
