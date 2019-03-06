@@ -17,45 +17,50 @@ class Twitch:
         self.session = aiohttp.ClientSession(headers={'Client-ID' : self.apiID})
         await self.__removeOldMessages()
         while True:
-            #For each twitch user check their status
             self.requests = 0
-            for user in self.database.GetFields("Users", ["Twitch"], "notNull", ["ServerId", "UserID", "Twitch"]):
-                channel = self.database.GetField("BotChannels", ["ServerId", "Type"], [user[0], "Twitch"], ["ChannelID"])
-                if channel:
-                    try:
-                        async with self.session.get('https://api.twitch.tv/helix/streams?user_login=' + user[2]) as resp:
-                            self.requests += 1
-                            if resp.status == 200:
-                                json = await resp.json()
+            twitchUsers = self.database.GetFields("Users", ["Twitch"], "notNull", ["ServerId", "UserID", "Twitch"])
+            usrStrReq = ""
+            for usr in twitchUsers:
+                if not usr[2] in usrStrReq:
+                    usrStrReq += "&user_login=" + usr[2]
+            try:
+                async with self.session.get('https://api.twitch.tv/helix/streams?' + usrStrReq[1:])  as resp:
+                    self.requests += 1
+                    if resp.status == 200:
+                        json = await resp.json()
+                        
+                        #check each twitch user (Could be same account on multiple discord servers)
+                        for user in twitchUsers:
+                            channel = self.database.GetField("BotChannels", ["ServerId", "Type"], [user[0], "Twitch"], ["ChannelID"])
+                            if channel:
                                 msgID = self.database.GetField("TwitchMessages", ["ServerID", "ChannelID", "UserID"], [user[0], channel[0], user[1]], ["MessageID"])
                                 server = self.bot.get_server(user[0])
-                                #If live
-                                if json['data']:
-                                    gameID = json['data'][0]['game_id']
-                                    msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\nhttps://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
-                                    #if not in the current user list
-                                    if not msgID:
-                                        message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
-                                        self.database.AddEntry("TwitchMessages", ["ServerID", "ChannelID", "MessageID", "UserID"], [user[0], channel[0], message.id, user[1]], [], [])
-                                    #Is in list, check for updates
-                                    else:
-                                        curMsg = await self.bot.get_message(server.get_channel(channel[0]), msgID[0])
-                                        if curMsg.content != msgText:
-                                            await self.bot.edit_message(curMsg, msgText)
+                                #Live user
+                                isLive = False;
+                                for liveUser in json['data']:
+                                    if liveUser['user_name'].lower() == user[2].lower():
+                                        isLive = True
+                                        gameID = liveUser['game_id']
+                                        msgText = "{} is live playing **{}** on Twitch! You can watch their stream here:\nhttps://www.twitch.tv/{}".format(server.get_member(user[1]).name, await self.__getGameName(gameID), user[2])
+                                        #if not in the current user list
+                                        if not msgID:
+                                            message = await self.bot.send_message(server.get_channel(channel[0]), msgText)
+                                            self.database.AddEntry("TwitchMessages", ["ServerID", "ChannelID", "MessageID", "UserID"], [user[0], channel[0], message.id, user[1]], [], [])
+                                        #Is in list, check for updates
+                                        else:
+                                            curMsg = await self.bot.get_message(server.get_channel(channel[0]), msgID[0])
+                                            if curMsg.content != msgText:
+                                                await self.bot.edit_message(curMsg, msgText)
                                 #Not live
-                                else:
+                                if not isLive:
                                     #Was in live list
                                     if msgID:
                                         await self.bot.delete_message(await self.bot.get_message(server.get_channel(channel[0]), msgID[0]))
                                         self.database.RemoveEntry("TwitchMessages", ["ServerID", "ChannelID", "MessageID"], [user[0], channel[0], msgID[0]])
-                    except Exception as e:
-                        print("**Hit exception in Twitch.py**")
-                        print(user)
-                        print(type(e).__name__ + str(e))
-                                
-                if self.requests > TWITCH_LIMIT:
-                    await asynico.sleep(60)
-                    self.requests = 0
+            except Exception as e:
+                print("**Hit exception in checkTwitch()**")
+                print(type(e).__name__ + str(e))
+                
             await asyncio.sleep(60)
             
     @commands.command(pass_context=True)
