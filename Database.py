@@ -25,19 +25,28 @@ class Database:
             ret = self.AddEntry(table, keys, kvals, fields, fvals)
         return ret
 
-    def GetFields(self, table, keys, kvals, fields):
+    def GetFields(self, table, keys, kvals, fields, distinct=False):
         #print("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
+        dist = ""
+        kstr = ""
+        
+        if distinct:
+            dist = " DISTINCT "
+            
         if kvals == 'null':
-            self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColValNull(keys, True)))
+            kstr = self.__ColValNull(keys, True)
         elif kvals == 'notNull':
-            self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColValNull(keys, False)))
+            kstr=self.__ColValNull(keys, False)
         else:
-            self.sqlDB.execute("SELECT {c} FROM {tn} WHERE {kstr}".format(c = self.__ColStr(fields), tn = table, kstr=self.__ColVal(keys, kvals, True)))
+            kstr=self.__ColVal(keys, kvals, True)
+            
+        
+        self.sqlDB.execute("SELECT {d}{c} FROM {tn} WHERE {k}".format(d=dist, c = self.__ColStr(fields), tn = table, k=kstr))
         return self.sqlDB.fetchall()
         
-    def GetField(self, table, keys, kvals, fields):
+    def GetField(self, table, keys, kvals, fields, distinct=False):
         #return the first field found
-        fields = self.GetFields(table, keys, kvals, fields)
+        fields = self.GetFields(table, keys, kvals, fields, distinct)
         if fields:
             return fields[0]
         else:

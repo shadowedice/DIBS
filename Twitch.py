@@ -18,11 +18,9 @@ class Twitch:
         await self.__removeOldMessages()
         while True:
             self.requests = 0
-            twitchUsers = self.database.GetFields("Users", ["Twitch"], "notNull", ["ServerId", "UserID", "Twitch"])
             usrStrReq = ""
-            for usr in twitchUsers:
-                if not usr[2] in usrStrReq:
-                    usrStrReq += "&user_login=" + usr[2]
+            for usr in self.database.GetFields("Users", ["Twitch"], "notNull", ["Twitch"], True):
+                usrStrReq += "&user_login=" + usr[0]
             try:
                 async with self.session.get('https://api.twitch.tv/helix/streams?' + usrStrReq[1:])  as resp:
                     self.requests += 1
@@ -30,7 +28,7 @@ class Twitch:
                         json = await resp.json()
                         
                         #check each twitch user (Could be same account on multiple discord servers)
-                        for user in twitchUsers:
+                        for user in self.database.GetFields("Users", ["Twitch"], "notNull", ["ServerId", "UserID", "Twitch"]):
                             channel = self.database.GetField("BotChannels", ["ServerId", "Type"], [user[0], "Twitch"], ["ChannelID"])
                             if channel:
                                 msgID = self.database.GetField("TwitchMessages", ["ServerID", "ChannelID", "UserID"], [user[0], channel[0], user[1]], ["MessageID"])
