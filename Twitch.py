@@ -104,5 +104,8 @@ class Twitch:
             
     async def __removeOldMessages(self):
         for message in self.database.GetTable("TwitchMessages", ["ServerID", "ChannelID", "MessageID"]):
-            await self.bot.delete_message(await self.bot.get_message(self.bot.get_server(message[0]).get_channel(message[1]), message[2]))
+            try:
+                await self.bot.delete_message(await self.bot.get_message(self.bot.get_server(message[0]).get_channel(message[1]), message[2]))
+            except  Exception as e:
+                print(type(e).__name__ + str(e))   
             self.database.RemoveEntry("TwitchMessages", ["ServerID", "ChannelID", "MessageID"], [message[0], message[1], message[2]])
