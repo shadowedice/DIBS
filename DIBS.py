@@ -19,7 +19,7 @@ if not discord.opus.is_loaded():
 bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
 database = Database()
-soundBoard = SoundBoard(bot,database)
+soundBoard = SoundBoard(bot, database)
 user = User(bot, database, soundBoard)
 holidays = Holidays(bot, database)
 twitch = Twitch(bot, database, Token.TwitchApiId())
@@ -27,7 +27,6 @@ twitch = Twitch(bot, database, Token.TwitchApiId())
 bot.add_cog(Stocks(bot))
 bot.add_cog(MagicCard(bot))
 bot.add_cog(TicTacToe(bot))
-bot.add_cog(Overwatch(bot))
 bot.add_cog(soundBoard)
 bot.add_cog(user)
 bot.add_cog(holidays)
@@ -40,16 +39,17 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    for server in bot.servers:
-        for member in server.members:
-            if not database.FieldExists("Users", ["ServerID", "UserID"], [server.id, member.id]):
-                if server.owner.id == member.id:
+    for guild in bot.guilds:
+        for member in guild.members:
+            if not database.FieldExists("Users", ["ServerID", "UserID"], [guild.id, member.id]):
+                if guild.owner.id == member.id:
                     admin = "True"
                 else:
                     admin = "False"
-                database.AddEntry("Users", ["ServerID", "UserID"], [server.id, member.id], ["Admin", "Mute", "Iam"], [admin, "False", ""])
+                database.AddEntry("Users", ["ServerID", "UserID"], [guild.id, member.id], ["Admin", "Mute", "Iam"],
+                                  [admin, "False", ""])
                 
-    #add startHoliday to the event loop
+    # add startHoliday to the event loop
     bot.loop.create_task(bot.get_cog("Holidays").startHoliday())
     bot.loop.create_task(bot.get_cog("Twitch").checkTwitch())
 
@@ -61,7 +61,7 @@ if Token.DiscordToken():
         print("Hit exception in DIBS main")
         print(e)
     finally:
-        #get all pending tasks and cancel them
+        # get all pending tasks and cancel them
         pending = asyncio.Task.all_tasks()
         for task in pending:
             task.cancel()

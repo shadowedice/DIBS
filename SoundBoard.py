@@ -1,41 +1,55 @@
 from discord.ext import commands
-import configparser
+import discord
+import asyncio
 import SoundEffect
 import os
 
-class SoundBoard:
+
+class SoundBoard(commands.Cog):
     def __init__(self, bot, database):
         self.bot = bot
         self.database = database
-            
+
     @commands.command(pass_context=True)
-    async def sb(self, ctx, name : str):
+    async def sb(self, ctx, name: str):
         if name == "commands":
             ret = "My current command list is "
-            vals = self.database.GetFields("SoundBoard", ["ServerID"], [ctx.message.server.id], ["Name", "Mute"])
-            for cmd in vals:
+            values = self.database.GetFields("SoundBoard", ["ServerID"], [ctx.message.guild.id], ["Name", "Mute"])
+            for cmd in values:
                 if cmd[1] != "True":
-                    ret += "**"+ cmd[0] + "**, "
-            await self.bot.say(ret)
+                    ret += "**" + cmd[0] + "**, "
+            await ctx.send(ret)
         else:
-            mute = self.database.GetFields("Users", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id], ["Mute"])
+            mute = self.database.GetFields("Users", ["ServerID", "UserID"],
+                                           [ctx.message.guild.id, ctx.message.author.id], ["Mute"])
             if mute and mute[0][0] == "True":
-                await self.bot.say("You are currently muted.")
+                await ctx.send("You are currently muted.")
             else:
-                vals = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["File", "Text", "Count", "Mute"])
-                if vals and vals[0][3] != "True":
-                    if vals[0][1]:
-                        ret = vals[0][1]
-                        if vals[0][2] != "-1":
-                            self.database.SetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.server.id, name], ["Count"], [str(int(vals[0][2])+1)])
-                            ret = ret.format(vals[0][2])
-                        await self.bot.say(ret)
+                values = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.guild.id, name],
+                                                 ["File", "Text", "Count", "Mute"])
+                if values and values[0][3] != "True":
+                    if values[0][1]:
+                        ret = values[0][1]
+                        if values[0][2] != "-1":
+                            self.database.SetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.guild.id, name],
+                                                    ["Count"], [str(int(values[0][2]) + 1)])
+                            ret = ret.format(values[0][2])
+                        await ctx.send(ret)
                     try:
-                        await SoundEffect.playEffect(self.bot, ctx.message.author.voice_channel, vals[0][0])
-                    except AttributeError:
-                        print("Error: Failed in %s callback" % cmd)
-                        
-            
+                        voice = await ctx.message.author.voice.channel.connect()
+
+                        voice.play(discord.FFmpegPCMAudio('./Audio/' + values[0][0]))
+                        timer = 0
+                        while voice.is_playing():
+                            await asyncio.sleep(1)
+                            timer += 1
+                            if timer > 30:
+                                break
+                        await voice.disconnect()
+
+                    except Exception as exc:
+                        print(type(exc).__name__ + str(exc))
+
     def addCommand(self, server, name, file, params):
         if self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
             return 1
@@ -46,7 +60,7 @@ class SoundBoard:
                 found = True
         if not found:
             return 2
-            
+
         fields = ["File", "Text", "Count", "Mute"]
         values = [file, "", "-1", "False"]
         if len(params) > 0:
@@ -57,23 +71,24 @@ class SoundBoard:
             values[3] = params[2]
         self.database.AddEntry("SoundBoard", ["ServerID", "Name"], [server, name], fields, values)
         return 0
-    
+
     def updateCommand(self, server, name, params):
         if not self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
             return False
-            
+
         fields = ["File", "Text", "Count", "Mute"]
         self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], fields[:len(params)], params)
         return True
-        
+
     def removeCommand(self, server, name):
         if self.database.RemoveEntry("SoundBoard", ["ServerID", "Name"], [server, name]):
             return True
         else:
             return False
-        
+
     def muteCommand(self, server, name, mute):
         if self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], ["Mute"], [mute]):
             return True
         else:
             return False
+
