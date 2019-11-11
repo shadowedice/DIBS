@@ -3,7 +3,6 @@ from discord.ext import commands
 from Stocks import Stocks
 from MagicCard import MagicCard
 from TicTacToe import TicTacToe
-from Overwatch import Overwatch
 from SoundBoard import SoundBoard
 from User import User
 from Database import Database

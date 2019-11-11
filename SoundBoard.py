@@ -1,7 +1,6 @@
 from discord.ext import commands
 import discord
 import asyncio
-import SoundEffect
 import os
 
 
@@ -32,7 +31,7 @@ class SoundBoard(commands.Cog):
                         ret = values[0][1]
                         if values[0][2] != "-1":
                             self.database.SetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.guild.id, name],
-                                                    ["Count"], [str(int(values[0][2]) + 1)])
+                                                    ["Count"], [values[0][2] + 1])
                             ret = ret.format(values[0][2])
                         await ctx.send(ret)
                     try:
