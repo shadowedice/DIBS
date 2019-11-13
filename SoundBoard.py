@@ -5,8 +5,7 @@ import os
 
 
 class SoundBoard(commands.Cog):
-    def __init__(self, bot, database):
-        self.bot = bot
+    def __init__(self, database):
         self.database = database
 
     @commands.command(pass_context=True)

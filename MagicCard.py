@@ -10,8 +10,7 @@ MESSAGE_LIMIT = 1800
 
 
 class MagicCard(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self):
         self.cardName = ''
         self.cardId = -1
 

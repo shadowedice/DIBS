@@ -4,8 +4,7 @@ import os
 
 
 class User(commands.Cog):
-    def __init__(self, bot, database, soundboard):
-        self.bot = bot
+    def __init__(self, database, soundboard):
         self.database = database
         self.soundBoard = soundboard
         

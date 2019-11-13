@@ -4,8 +4,8 @@ import json
 
 
 class Stocks(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self):
+        pass
         
     # Currently uses iextrading
     @commands.command()
