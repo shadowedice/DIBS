@@ -8,6 +8,7 @@ from User import User
 from Database import Database
 from Holidays import Holidays
 from Twitch import Twitch
+from General import General
 import Token
 import asyncio
 from contextlib import suppress
@@ -18,18 +19,19 @@ if not discord.opus.is_loaded():
 bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
 database = Database()
-soundBoard = SoundBoard(bot, database)
-user = User(bot, database, soundBoard)
+soundBoard = SoundBoard(database)
+user = User(database, soundBoard)
 holidays = Holidays(bot, database)
 twitch = Twitch(bot, database, Token.TwitchApiId())
 
-bot.add_cog(Stocks(bot))
-bot.add_cog(MagicCard(bot))
-bot.add_cog(TicTacToe(bot))
+bot.add_cog(Stocks())
+bot.add_cog(MagicCard())
+bot.add_cog(TicTacToe())
 bot.add_cog(soundBoard)
 bot.add_cog(user)
 bot.add_cog(holidays)
 bot.add_cog(twitch)
+bot.add_cog(General())
 
 
 @bot.event

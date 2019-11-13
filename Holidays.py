@@ -43,12 +43,12 @@ class Holidays(commands.Cog):
         while self.currentGame == "NewYears" and not self.bot.is_closed:
             waitTime = 0
             # Just get the first channel, dont care about others
-            for server in self.bot.servers:
-                channel = self.database.GetField("BotChannels", ["ServerID", "Type"], [server.id, "Holiday"],
+            for guild in self.bot.guilds:
+                channel = self.database.GetField("BotChannels", ["ServerID", "Type"], [guild.id, "Holiday"],
                                                  ["ChannelID"])
                 if channel:
-                    await self.bot.send_message(server.get_channel(channel[0]),
-                                                "DRINK!!! :beer: :beers: :wine_glass: :champagne: :champagne_glass:")
+                    await guild.get_channel(channel[0]).send(
+                        "DRINK!!! :beer: :beers: :wine_glass: :champagne: :champagne_glass:")
                     
             if date.today().month == DECEMBER and datetime.now().hour >= 12:
                 waitTime = random.randint(2700, 3600)
@@ -71,7 +71,7 @@ class Holidays(commands.Cog):
 
     async def christmasGame(self):
         while self.currentGame == "Christmas" and not self.bot.is_closed:
-            for server in self.bot.servers:
+            for guild in self.bot.guilds:
                 channels = self.database.GetFields("BotChannels", ["ServerID", "Type"], [server.id, "Holiday"],
                                                    ["ChannelID"])
                 if channels:
@@ -86,14 +86,14 @@ class Holidays(commands.Cog):
                     elif randVal == 2:
                         msg = "The grinch has left {} laying on the ground here!".format(":new_moon:" *
                                                                                          random.randint(6, 15))
-                        
-                    message = await self.bot.send_message(server.get_channel(random.choice(channels)[0]), msg)
+
+                    message = await guild.get_channel(random.choice(channels)[0]).send(msg)
                     self.messages.append(message)
             await asyncio.sleep(random.randint(1800, 3600))
             self.dynamicFactor = max(3.0, self.dynamicFactor - 0.05)
             
             for message in self.messages:
-                await self.bot.send_message(message.channel, "It looks like the grinch found what he left behind...")
+                await guild.get_channel(message.channel).send("It looks like the grinch found what he left behind...")
             self.messages.clear()
             
             if date.today().day >= CHRISTMAS_DAY:
@@ -119,7 +119,7 @@ class Holidays(commands.Cog):
                     text = "{} recovered {} x {}!\n".format(ctx.message.author.name, item, itemCount)
                     
                     user = self.database.GetField("Christmas", ["ServerID", "UserID"],
-                                                  [ctx.message.server.id, ctx.message.author.id],
+                                                  [ctx.message.guild.id, ctx.message.author.id],
                                                   ["Bag", "Gift", "Coal", "TotalBags"])
                     bags = user[0]
                     gifts = user[1]
@@ -133,10 +133,10 @@ class Holidays(commands.Cog):
                     elif item == ":new_moon:":
                         coal += itemCount
                     self.database.SetFields("Christmas", ["ServerID", "UserID"],
-                                            [ctx.message.server.id, ctx.message.author.id],
+                                            [ctx.message.guild.id, ctx.message.author.id],
                                             ["Bag", "Gift", "Coal", "TotalBags"], [bags, gifts, coal, totalBags])
                     text += self.__itemSummary(ctx.message.author.name, bags, gifts, coal)
-                    await self.bot.say(text)
+                    await ctx.send(text)
                     removeMsg = msg
                             
             if removeMsg:
@@ -162,7 +162,7 @@ class Holidays(commands.Cog):
         if not await self.__checkForGame("Christmas"):
             return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"],
-                                      [ctx.message.server.id, ctx.message.author.id],
+                                      [ctx.message.guild.id, ctx.message.author.id],
                                       ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags"])
         if user:
             bags = user[0]
@@ -183,41 +183,41 @@ class Holidays(commands.Cog):
                     openedBag += 1
                 bags -= amount
                 self.database.SetFields("Christmas", ["ServerID", "UserID"],
-                                        [ctx.message.server.id, ctx.message.author.id],
+                                        [ctx.message.guild.id, ctx.message.author.id],
                                         ["Bag", "Gift", "Coal", "OpenedBags"], [bags, gifts, coal, openedBag])
                 msg = "{}! You managed to find :gift: x {} and :new_moon: x {}!\n".format(ctx.message.author.name,
                                                                                           giftGain, coalGain)
                 msg += self.__itemSummary(ctx.message.author.name, bags, gifts, coal)
-                await self.bot.say(msg)
+                await ctx.send(msg)
             else:
-                await self.bot.say("I'm afraid you don't have enough bags to open.")
+                await ctx.send("I'm afraid you don't have enough bags to open.")
 
     @commands.command(pass_context=True)
     async def convertBags(self, ctx, amount: int):
         if not await self.__checkForGame("Christmas"):
             return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"],
-                                      [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
+                                      [ctx.message.guild.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             bags = user[0]
             if bags >= amount > 0:
                 gifts = amount + user[1]
                 bags -= amount
                 self.database.SetFields("Christmas", ["ServerID", "UserID"],
-                                        [ctx.message.server.id, ctx.message.author.id],
+                                        [ctx.message.guild.id, ctx.message.author.id],
                                         ["Bag", "Gift"], [bags, gifts])
                 msg = "{}! :santa: used his magic to make :gift: x {}!\n".format(ctx.message.author.name, amount)
                 msg += self.__itemSummary(ctx.message.author.name, bags, gifts, user[2])
-                await self.bot.say(msg)
+                await ctx.send(msg)
             else:
-                await self.bot.say("I'm afraid you don't have enough bags to give.")
+                await ctx.send("I'm afraid you don't have enough bags to give.")
     
     @commands.command(pass_context=True)
     async def convertCoal(self, ctx, amount: int):
         if not await self.__checkForGame("Christmas"):
             return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"],
-                                      [ctx.message.server.id, ctx.message.author.id],
+                                      [ctx.message.guild.id, ctx.message.author.id],
                                       ["Bag", "Gift", "Coal"])
         if user:
             coal = user[2]
@@ -234,23 +234,23 @@ class Holidays(commands.Cog):
                         self.dynamicFactor += 0.1
                     coal -= usedCoal
                     self.database.SetFields("Christmas", ["ServerID", "UserID"],
-                                            [ctx.message.server.id, ctx.message.author.id], ["Gift", "Coal"],
+                                            [ctx.message.guild.id, ctx.message.author.id], ["Gift", "Coal"],
                                             [gifts, coal])
                     msg = "{}! :santa: used his magic to make :gift: x {} from :new_moon: x {}!\n".format(
                         ctx.message.author.name, newGifts, usedCoal)
                     msg += self.__itemSummary(ctx.message.author.name, user[0], gifts, coal)
-                    await self.bot.say(msg)
+                    await ctx.send(msg)
                 else:
-                    await self.bot.say("I'm afraid you didn't give enough coal to make a gift.")
+                    await ctx.send("I'm afraid you didn't give enough coal to make a gift.")
                     
             else:
-                await self.bot.say("I'm afraid you don't have enough coal to give.")
+                await ctx.send("I'm afraid you don't have enough coal to give.")
     
     @commands.command()        
-    async def coalMagic(self):
+    async def coalMagic(self, ctx):
         if not await self.__checkForGame("Christmas"):
             return
-        await self.bot.say(":santa: says it would take around :new_moon: x {} to make you one :gift:!".format(
+        await ctx.send(":santa: says it would take around :new_moon: x {} to make you one :gift:!".format(
             int(self.dynamicFactor)))
             
     @commands.command(pass_context=True)
@@ -258,26 +258,26 @@ class Holidays(commands.Cog):
         if not await self.__checkForGame("Christmas"):
             return
         user = self.database.GetField("Christmas", ["ServerID", "UserID"],
-                                      [ctx.message.server.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
+                                      [ctx.message.guild.id, ctx.message.author.id], ["Bag", "Gift", "Coal"])
         if user:
             gifts = max(user[1] - 5, -2)
-            self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, ctx.message.author.id],
+            self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.guild.id, ctx.message.author.id],
                                     ["Gift"], [gifts])
             msg = ":santa: Oh ho ho ho! We have a grinch here!\n"
             msg += "{}, you are going to need to give me some extra presents to make up for this!\n".format(
                 ctx.message.author.name)
             msg += "You lost :gift: x {}!\n".format((user[1]-gifts))
             msg += self.__itemSummary(ctx.message.author.name, user[0], gifts, user[2])
-            await self.bot.say(msg)
+            await ctx.send(msg)
 
     @commands.command(pass_context=True)
     async def giveGifts(self, ctx, person: discord.Member, count: int):
         if not await self.__checkForGame("Christmas"):
             return
         donor = self.database.GetField("Christmas", ["ServerID", "UserID"],
-                                       [ctx.message.server.id, ctx.message.author.id],
+                                       [ctx.message.guild.id, ctx.message.author.id],
                                        ["Bag", "Gift", "Coal", "DibsGifts"])
-        receiver = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id],
+        receiver = self.database.GetField("Christmas", ["ServerID", "UserID"], [ctx.message.guild.id, person.id],
                                           ["Bag", "Gift", "Coal"])
         if donor and ctx.message.author.id != person.id:
             if donor[1] >= count > 0:
@@ -286,46 +286,46 @@ class Holidays(commands.Cog):
                     ctx.message.author.name, person.name, count)
                 msg += self.__itemSummary(ctx.message.author.name, donor[0], donorGifts, donor[2])
                 self.database.SetFields("Christmas", ["ServerID", "UserID"],
-                                        [ctx.message.server.id, ctx.message.author.id], ["Gift"], [donorGifts])
+                                        [ctx.message.guild.id, ctx.message.author.id], ["Gift"], [donorGifts])
                 
                 if receiver:
                     receiverGifts = receiver[1] + count
-                    self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id],
+                    self.database.SetFields("Christmas", ["ServerID", "UserID"], [ctx.message.guild.id, person.id],
                                             ["Gift"], [receiverGifts])
                     msg += self.__itemSummary(person.name, receiver[0], receiverGifts, receiver[2])
                 else:
-                    self.database.AddEntry("Christmas", ["ServerID", "UserID"], [ctx.message.server.id, person.id],
+                    self.database.AddEntry("Christmas", ["ServerID", "UserID"], [ctx.message.guild.id, person.id],
                                            ["Bag", "Gift", "Coal", "OpenedBags", "TotalBags", "DibsGifts"],
                                            [0, count, 0, 0, 0, 0])
                     msg += self.__itemSummary(person.name, 0, count, 0)
-                await self.bot.say(msg)
+                await ctx.send(msg)
                 
                 if person.id == self.bot.user.id:
                     dGifts = donor[3] + count
                     self.database.SetFields("Christmas", ["ServerID", "UserID"],
-                                            [ctx.message.server.id, ctx.message.author.id], ["DibsGifts"], [dGifts])
+                                            [ctx.message.guild.id, ctx.message.author.id], ["DibsGifts"], [dGifts])
                 
             else:
-                await self.bot.say("I'm sorry, but you don't have that many :gift: to give.")
+                await ctx.send("I'm sorry, but you don't have that many :gift: to give.")
                 
     @commands.command(pass_context=True)
     async def christmasScore(self, ctx):
         text = ""
-        users = self.database.GetFields("Christmas", ["ServerID"], [ctx.message.server.id],
+        users = self.database.GetFields("Christmas", ["ServerID"], [ctx.message.guild.id],
                                         ["UserID", "Bag", "Gift", "Coal"])
         for user in sorted(users, key=itemgetter(2), reverse=True):
             bags = user[1]
             gifts = user[2]
             coal = user[3]
-            text += self.__itemSummary(ctx.message.server.get_member(user[0]).name, bags, gifts, coal)
-        await self.bot.say(text)
+            text += self.__itemSummary(ctx.message.guild.get_member(user[0]).name, bags, gifts, coal)
+        await ctx.send(text)
                 
     def __itemSummary(self, name, bags, gifts, coal):
         return "{}: :moneybag: x {}, :gift: x {}, :new_moon: x {}\n".format(name, bags, gifts, coal)
         
-    async def __checkForGame(self, game):
+    async def __checkForGame(self, ctx, game):
         if game == self.currentGame:
             return True
         else:
-            await self.bot.say("I'm afraid it isn't the time of the year for that command")
+            await ctx.send("I'm afraid it isn't the time of the year for that command")
             return False

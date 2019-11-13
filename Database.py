@@ -8,7 +8,7 @@ class Database:
         self.sqlDB = self.connection.cursor()
 
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Users (ServerID INT, UserID INT, Admin, Mute, Iam, Twitch)")
-        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID INT, Name, File, Text, Count, Mute)")
+        self.sqlDB.execute("CREATE TABLE IF NOT EXISTS SoundBoard (ServerID INT, Name, File, Text, Count INT, Mute)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS Christmas (ServerID INT, UserID INT, Bag INT, Gift INT,"
                            " Coal INT, OpenedBags INT, TotalBags INT, DibsGifts INT)")
         self.sqlDB.execute("CREATE TABLE IF NOT EXISTS BotChannels (ServerID INT, ChannelID INT, Type)")

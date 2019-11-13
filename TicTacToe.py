@@ -14,8 +14,7 @@ class GameState:
 
 
 class TicTacToe(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self):
         self.game_states = {}
         
     # this command starts a new game. Only one game per channel
