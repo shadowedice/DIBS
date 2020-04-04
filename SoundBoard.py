@@ -25,7 +25,7 @@ class SoundBoard(commands.Cog):
             else:
                 values = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.guild.id, name],
                                                  ["File", "Text", "Count", "Mute"])
-                if values and values[0][3] != "True":
+                if values and values[0][3] != "True" and ctx.message.author.voice:
                     if values[0][1]:
                         ret = values[0][1]
                         if values[0][2] != "-1":
