@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import re
 
 
 class User(commands.Cog):
@@ -124,7 +125,7 @@ class User(commands.Cog):
                                        ["Admin", "Mute", "Iam"], [admin, "False", ""])
                         
     def __stripId(self, user_id):
-        return user_id[2:-1]
+        return re.findall('[0-9]+', user_id)
         
     def __combine_str(self, strings):
         name = ''
