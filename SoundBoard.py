@@ -2,14 +2,27 @@ from discord.ext import commands
 import discord
 import asyncio
 import os
+import queue
 
 
 class SoundBoard(commands.Cog):
     def __init__(self, database):
         self.database = database
+        self.requestQueue = queue.Queue()
 
-    @commands.command(pass_context=True)
-    async def sb(self, ctx, name: str):
+    async def listenForRequests(self):
+        while True:
+            if not self.requestQueue.empty():
+                request = self.requestQueue.get()
+                try:
+                    context = request[0]
+                    name = request[1]
+                    await self.processCommand(context, name)
+                except:
+                    print("Error handling request, name = " + name)
+            await asyncio.sleep(1)
+
+    async def processCommand(self, ctx, name):
         if name == "commands":
             ret = "My current command list is "
             values = self.database.GetFields("SoundBoard", ["ServerID"], [ctx.message.guild.id], ["Name", "Mute"])
@@ -47,6 +60,12 @@ class SoundBoard(commands.Cog):
 
                     except Exception as exc:
                         print(type(exc).__name__ + str(exc))
+
+    @commands.command(pass_context=True)
+    async def sb(self, ctx, name: str):
+        request = (ctx, name)
+        print("adding " + name + " to request queue")
+        self.requestQueue.put(request)
 
     def addCommand(self, server, name, file, params):
         if self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
@@ -89,4 +108,3 @@ class SoundBoard(commands.Cog):
             return True
         else:
             return False
-

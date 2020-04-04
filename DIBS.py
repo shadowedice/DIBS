@@ -13,9 +13,6 @@ import Token
 import asyncio
 from contextlib import suppress
 
-if not discord.opus.is_loaded():
-    discord.opus.load_opus("libopus.so")
-
 bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
 database = Database()
@@ -52,6 +49,7 @@ async def on_ready():
                 
     # add startHoliday to the event loop
     bot.loop.create_task(bot.get_cog("Holidays").startHoliday())
+    bot.loop.create_task(bot.get_cog("SoundBoard").listenForRequests())
     bot.loop.create_task(bot.get_cog("Twitch").checkTwitch())
 
     
