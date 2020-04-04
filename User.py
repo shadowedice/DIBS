@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+import re
 
 
 class User(commands.Cog):
@@ -53,19 +54,23 @@ class User(commands.Cog):
             elif cmd == 'mute':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.muteCommand(ctx.message.guild.id, params[1], "True"):
-                        await ctx.send("Muted sb {}".format(params[1]))
+                        await ctx.send("Muted sb {}.".format(params[1]))
+                    else:
+                        await ctx.send("Could not find sb {}.".format(params[1]))
                 elif len(params) == 2 and params[0] == "user":
                     if self.database.SetFields("Users",  ["ServerID", "UserID"],
                                                [ctx.message.guild.id, self.__stripId(params[1])], ["Mute"], ["True"]):
-                        await ctx.send("Muted user {}".format(params[1]))
+                        await ctx.send("Muted user {}.".format(params[1]))
             elif cmd == 'unmute':
                 if len(params) == 2 and params[0] == "sb":
                     if self.soundBoard.muteCommand(ctx.message.guild.id, params[1], "false"):
                         await ctx.send("Unmuted sb {}".format(params[1]))
+                    else:
+                        await ctx.send("Could not find sb {}.".format(params[1]))
                 elif len(params) == 2 and params[0] == "user":
                     if self.database.SetFields("Users", ["ServerID", "UserID"],
                                                [ctx.message.guild.id, self.__stripId(params[1])], ["Mute"], ["False"]):
-                        await ctx.send("Unmuted user {}".format(params[1]))
+                        await ctx.send("Unmuted user {}.".format(params[1]))
             elif cmd == 'update':
                 if len(params) >= 3 and params[0] == "whois":
                     if self.database.SetFields("Users", ["ServerID", "UserID"],
@@ -124,7 +129,7 @@ class User(commands.Cog):
                                        ["Admin", "Mute", "Iam"], [admin, "False", ""])
                         
     def __stripId(self, user_id):
-        return user_id[2:-1]
+        return re.findall('[0-9]+', user_id)[0]
         
     def __combine_str(self, strings):
         name = ''

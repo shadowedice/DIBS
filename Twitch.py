@@ -53,7 +53,7 @@ class Twitch(commands.Cog):
                                         else:
                                             curMsg = await guild.get_channel(channel[0]).fetch_message(msgID[0])
                                             if curMsg.content != msgText:
-                                                await self.bot.edit_message(curMsg, msgText)
+                                                await curMsg.edit(msgText)
                                 # Not live
                                 if not isLive:
                                     # Was in live list

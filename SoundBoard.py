@@ -38,7 +38,7 @@ class SoundBoard(commands.Cog):
             else:
                 values = self.database.GetFields("SoundBoard", ["ServerID", "Name"], [ctx.message.guild.id, name],
                                                  ["File", "Text", "Count", "Mute"])
-                if values and values[0][3] != "True":
+                if values and values[0][3] != "True" and ctx.message.author.voice:
                     if values[0][1]:
                         ret = values[0][1]
                         if values[0][2] != "-1":
@@ -104,7 +104,15 @@ class SoundBoard(commands.Cog):
             return False
 
     def muteCommand(self, server, name, mute):
+<<<<<<< HEAD
         if self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], ["Mute"], [mute]):
             return True
         else:
             return False
+=======
+        if self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
+            if self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], ["Mute"], [mute]):
+                return True
+        return False
+
+>>>>>>> 9a1568ba90bfe660944a578dd8c8a7f5c1b33164
