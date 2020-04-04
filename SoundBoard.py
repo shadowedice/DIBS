@@ -104,15 +104,7 @@ class SoundBoard(commands.Cog):
             return False
 
     def muteCommand(self, server, name, mute):
-<<<<<<< HEAD
-        if self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], ["Mute"], [mute]):
-            return True
-        else:
-            return False
-=======
         if self.database.FieldExists("SoundBoard", ["ServerID", "Name"], [server, name]):
             if self.database.SetFields("SoundBoard", ["ServerID", "Name"], [server, name], ["Mute"], [mute]):
                 return True
         return False
-
->>>>>>> 9a1568ba90bfe660944a578dd8c8a7f5c1b33164
