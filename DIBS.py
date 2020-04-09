@@ -16,7 +16,7 @@ from contextlib import suppress
 bot = commands.Bot(command_prefix='$', description='I am here to serve')
 
 database = Database()
-soundBoard = SoundBoard(database)
+soundBoard = SoundBoard(bot, database)
 user = User(database, soundBoard)
 holidays = Holidays(bot, database)
 twitch = Twitch(bot, database, Token.TwitchApiId())
@@ -46,12 +46,6 @@ async def on_ready():
                     admin = "False"
                 database.AddEntry("Users", ["ServerID", "UserID"], [guild.id, member.id], ["Admin", "Mute", "Iam"],
                                   [admin, "False", ""])
-                
-    # add startHoliday to the event loop
-    bot.loop.create_task(bot.get_cog("Holidays").startHoliday())
-    bot.loop.create_task(bot.get_cog("SoundBoard").listenForRequests())
-    bot.loop.create_task(bot.get_cog("Twitch").checkTwitch())
-
     
 if Token.DiscordToken():
     try:
@@ -66,8 +60,7 @@ if Token.DiscordToken():
             task.cancel()
             with suppress(asyncio.CancelledError):
                 bot.loop.run_until_complete(task)
-                
-        bot.loop.run_until_complete(twitch.closeSession())
+
         bot.loop.run_until_complete(bot.logout())
         bot.loop.close()
 
