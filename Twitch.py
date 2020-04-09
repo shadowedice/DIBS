@@ -10,7 +10,7 @@ class Twitch(commands.Cog):
         self.bot = bot
         self.database = database
         self.apiID = apiID
-        self.session = aiohttp.ClientSession(headers={'Client-ID': self.apiID})
+        self.session = None
         self.requests = 0
         self.checkTwitch.start()
 
@@ -72,6 +72,7 @@ class Twitch(commands.Cog):
 
     @checkTwitch.before_loop
     async def before_checkTwitch(self):
+        self.session = aiohttp.ClientSession(headers={'Client-ID': self.apiID})
         await self.bot.wait_until_ready()
         await self.__removeOldMessages()
 
