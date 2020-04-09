@@ -75,12 +75,12 @@ class Twitch(commands.Cog):
         self.session = aiohttp.ClientSession(headers={'Client-ID': self.apiID})
         await self.bot.wait_until_ready()
         await self.__removeOldMessages()
-
+        
     @checkTwitch.after_loop
     async def after_checkTwitch(self):
         if self.checkTwitch.is_being_cancelled() and not self.session.closed:
             await self.session.close()
-
+            
     @commands.command(pass_context=True)
     async def addTwitch(self, ctx, name: str):
         if self.session:
