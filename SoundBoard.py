@@ -1,4 +1,4 @@
-from discord.ext import commands
+from discord.ext import tasks, commands
 import discord
 import asyncio
 import os
@@ -6,21 +6,29 @@ import queue
 
 
 class SoundBoard(commands.Cog):
-    def __init__(self, database):
+    def __init__(self, bot, database):
+        self.bot = bot
         self.database = database
         self.requestQueue = queue.Queue()
+        self.sbListener.start()
 
-    async def listenForRequests(self):
-        while True:
-            if not self.requestQueue.empty():
-                request = self.requestQueue.get()
-                try:
-                    context = request[0]
-                    name = request[1]
-                    await self.processCommand(context, name)
-                except:
-                    print("Error handling request, name = " + name)
-            await asyncio.sleep(1)
+    def cog_unload(self):
+        self.sbListener.cancel()
+
+    @tasks.loop(seconds=1.0)
+    async def sbListener(self):
+        if not self.requestQueue.empty():
+            request = self.requestQueue.get()
+            try:
+                context = request[0]
+                name = request[1]
+                await self.processCommand(context, name)
+            except:
+                print("Error handling request, name = " + name)
+
+    @sbListener.before_loop
+    async def before_sbListener(self):
+        await self.bot.wait_until_ready()
 
     async def processCommand(self, ctx, name):
         if name == "commands":
@@ -64,7 +72,6 @@ class SoundBoard(commands.Cog):
     @commands.command(pass_context=True)
     async def sb(self, ctx, name: str):
         request = (ctx, name)
-        print("adding " + name + " to request queue")
         self.requestQueue.put(request)
 
     def addCommand(self, server, name, file, params):

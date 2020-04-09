@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import tasks, commands
 from datetime import date
 from datetime import datetime
 from operator import itemgetter
@@ -22,22 +22,28 @@ class Holidays(commands.Cog):
         self.messages = []
         self.dynamicFactor = 3.0
         self.currentGame = ""
+        self.startHoliday.start()
 
+    def cog_unload(self):
+        self.startHoliday.cancel()
+
+    @tasks.loop(seconds=3600.0)
     async def startHoliday(self):
-        while not self.bot.is_closed:
-            if date.today().month == NOVEMBER:
-                self.currentGame = "Thanksgiving"
-                await self.thanksgivingGame()
-            elif date.today().month == DECEMBER and date.today().day < CHRISTMAS_DAY:
-                self.currentGame = "Christmas"
-                await self.christmasGame()
-            elif date.today().month == DECEMBER and date.today().day == NYEVE_DAY and datetime.now().hour >= 12:
-                self.currentGame = "NewYears"
-                await self.newYearsGame()
-            else:
-                self.currentGame = ""
-            
-            await asyncio.sleep(3600)
+        if date.today().month == NOVEMBER:
+            self.currentGame = "Thanksgiving"
+            await self.thanksgivingGame()
+        elif date.today().month == DECEMBER and date.today().day < CHRISTMAS_DAY:
+            self.currentGame = "Christmas"
+            await self.christmasGame()
+        elif date.today().month == DECEMBER and date.today().day == NYEVE_DAY and datetime.now().hour >= 12:
+            self.currentGame = "NewYears"
+            await self.newYearsGame()
+        else:
+            self.currentGame = ""
+
+    @startHoliday.before_loop
+    async def before_startHoliday(self):
+        await self.bot.wait_until_ready()
         
     async def newYearsGame(self):
         while self.currentGame == "NewYears" and not self.bot.is_closed:
