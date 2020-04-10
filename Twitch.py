@@ -56,7 +56,7 @@ class Twitch(commands.Cog):
                                     else:
                                         curMsg = await guild.get_channel(channel[0]).fetch_message(msgID[0])
                                         if curMsg.content != msgText:
-                                            await curMsg.edit(msgText)
+                                            await curMsg.edit(content=msgText)
                             # Not live
                             if not isLive:
                                 # Was in live list
@@ -68,7 +68,7 @@ class Twitch(commands.Cog):
                                                               [user[0], channel[0], msgID[0]])
         except Exception as e:
             print("**Hit exception in checkTwitch()**")
-            print(type(e).__name__ + str(e))
+            print(type(e).__name__ + ' ' + str(e))
 
     @checkTwitch.before_loop
     async def before_checkTwitch(self):
