@@ -19,7 +19,7 @@ database = Database()
 soundBoard = SoundBoard(bot, database)
 user = User(database, soundBoard)
 holidays = Holidays(bot, database)
-twitch = Twitch(bot, database, Token.TwitchApiId())
+twitch = Twitch(bot, database, Token.TwitchClientId(), Token.TwitchClientSecret())
 
 bot.add_cog(Stocks())
 bot.add_cog(MagicCard())

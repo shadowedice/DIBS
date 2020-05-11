@@ -1,17 +1,21 @@
 from discord.ext import tasks, commands
 import aiohttp
-import asyncio
+from datetime import datetime, timedelta
 
 TWITCH_LIMIT = 25
 
 
 class Twitch(commands.Cog):
-    def __init__(self, bot, database, apiID):
+    def __init__(self, bot, database, clientID, clientSecret):
         self.bot = bot
         self.database = database
-        self.apiID = apiID
+        self.clientID = clientID
+        self.clientSecret = clientSecret
         self.session = None
         self.requests = 0
+        self.oathToken = ''
+        self.oathExpiration = datetime.now()
+        self.headers = {}
         self.checkTwitch.start()
 
     def cog_unload(self):
@@ -20,11 +24,13 @@ class Twitch(commands.Cog):
     @tasks.loop(seconds=60.0)
     async def checkTwitch(self):
         self.requests = 0
+        if self.oathExpiration < (datetime.now() + timedelta(seconds=60)):
+            await self.__getOathToken()
         usrStrReq = ""
         for usr in self.database.GetFields("Users", ["Twitch"], "notNull", ["Twitch"], True):
             usrStrReq += "&user_login=" + usr[0]
         try:
-            async with self.session.get('https://api.twitch.tv/helix/streams?' + usrStrReq[1:]) as resp:
+            async with self.session.get('https://api.twitch.tv/helix/streams?' + usrStrReq[1:], headers=self.headers) as resp:
                 self.requests += 1
                 if resp.status == 200:
                     json = await resp.json()
@@ -66,13 +72,15 @@ class Twitch(commands.Cog):
                                     self.database.RemoveEntry("TwitchMessages",
                                                               ["ServerID", "ChannelID", "MessageID"],
                                                               [user[0], channel[0], msgID[0]])
+                else:
+                    print("Did not get a successful response from twitch: " + resp.status)
         except Exception as e:
             print("**Hit exception in checkTwitch()**")
             print(type(e).__name__ + ' ' + str(e))
 
     @checkTwitch.before_loop
     async def before_checkTwitch(self):
-        self.session = aiohttp.ClientSession(headers={'Client-ID': self.apiID})
+        self.session = aiohttp.ClientSession()
         await self.bot.wait_until_ready()
         await self.__removeOldMessages()
         
@@ -84,7 +92,9 @@ class Twitch(commands.Cog):
     @commands.command(pass_context=True)
     async def addTwitch(self, ctx, name: str):
         if self.session:
-            async with self.session.get('https://api.twitch.tv/helix/users?login=' + name) as resp:
+            if self.oathExpiration < datetime.now():
+                await self.__getOathToken()
+            async with self.session.get('https://api.twitch.tv/helix/users?login=' + name, headers=self.headers) as resp:
                 json = await resp.json()
                 try:
                     if json['data']:
@@ -109,7 +119,7 @@ class Twitch(commands.Cog):
     async def __getGameName(self, gameID):
         game_string = self.database.GetField("TwitchGameID", ["GameID"], [gameID], ["GameStr"])
         if not game_string:
-            async with self.session.get('https://api.twitch.tv/helix/games?id=' + gameID) as resp:
+            async with self.session.get('https://api.twitch.tv/helix/games?id=' + gameID, headers=self.headers) as resp:
                 self.requests += 1
                 if resp.status == 200:
                     json = await resp.json()
@@ -119,6 +129,16 @@ class Twitch(commands.Cog):
                         return name
         else:
             return game_string[0]
+
+    async def __getOathToken(self):
+        async with self.session.post('https://id.twitch.tv/oauth2/token?client_id=' + self.clientID +'&client_secret=' + self.clientSecret + '&grant_type=client_credentials') as resp:
+            if resp.status == 200:
+                json = await resp.json()
+                self.oathToken = json['access_token']
+                self.oathExpiration = datetime.now() + timedelta(seconds=json['expires_in'])
+                bearer = 'Bearer <' + self.oathToken + '>'
+                self.headers = {'Client-ID': self.clientID, 'Authorization': bearer}
+
             
     async def __removeOldMessages(self):
         for message in self.database.GetTable("TwitchMessages", ["ServerID", "ChannelID", "MessageID"]):
