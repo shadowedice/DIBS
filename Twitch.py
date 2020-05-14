@@ -73,7 +73,7 @@ class Twitch(commands.Cog):
                                                               ["ServerID", "ChannelID", "MessageID"],
                                                               [user[0], channel[0], msgID[0]])
                 else:
-                    print("Did not get a successful response from twitch: " + resp.status)
+                    print("Did not get a successful response from twitch: " + str(resp.status))
         except Exception as e:
             print("**Hit exception in checkTwitch()**")
             print(type(e).__name__ + ' ' + str(e))
@@ -136,8 +136,10 @@ class Twitch(commands.Cog):
                 json = await resp.json()
                 self.oathToken = json['access_token']
                 self.oathExpiration = datetime.now() + timedelta(seconds=json['expires_in'])
-                bearer = 'Bearer <' + self.oathToken + '>'
+                bearer = 'Bearer ' + self.oathToken
                 self.headers = {'Client-ID': self.clientID, 'Authorization': bearer}
+            else:
+                print("Error in getting bearer token: " + str(resp.status))
 
             
     async def __removeOldMessages(self):
