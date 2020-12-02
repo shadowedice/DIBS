@@ -13,7 +13,9 @@ import Token
 import asyncio
 from contextlib import suppress
 
-bot = commands.Bot(command_prefix='$', description='I am here to serve')
+intents = discord.Intents().default()
+intents.members = True
+bot = commands.Bot(command_prefix='$', description='I am here to serve', intents=intents)
 
 database = Database()
 soundBoard = SoundBoard(bot, database)
