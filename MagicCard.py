@@ -13,6 +13,10 @@ class MagicCard(commands.Cog):
     def __init__(self):
         self.cardName = ''
         self.cardId = -1
+        self.session = aiohttp.ClientSession()
+        
+    def cog_unload(self):
+        self.session.close()
 
     def combine_str(self, strings):
         name = ''
@@ -38,15 +42,15 @@ class MagicCard(commands.Cog):
 
     async def card_check(self):
         try:
-            async with aiohttp.request('GET', "http://gatherer.wizards.com/Pages/Card/Details.aspx?name=%s" %
-                                              ur.quote(self.cardName)) as resp:
+            link = "http://gatherer.wizards.com/Pages/Card/Details.aspx?name=%s" % ur.quote(self.cardName)
+            async with self.session.get(link, ssl=False) as resp:
                 return re.search('multiverseid=([0-9]*)', await resp.text()).group(1)
         except AttributeError:
             return False
 
     async def card_text(self):
         link = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=%s" % self.cardId
-        async with aiohttp.request('GET', link) as resp:
+        async with self.session.get(link, ssl=False) as resp:
         
             soup = BeautifulSoup(await resp.read(), 'html.parser')
             ret = ""
@@ -80,12 +84,12 @@ class MagicCard(commands.Cog):
     
     async def card_image(self):
         link = "http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=%s&type=card" % self.cardId
-        async with aiohttp.request('GET', link) as resp:
+        async with self.session.get(link, ssl=False) as resp:
             return io.BytesIO(await resp.read())
         
     async def card_rulings(self):
         link = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=%s" % self.cardId
-        async with aiohttp.request('GET', link) as resp:
+        async with self.session.get(link, ssl=False) as resp:
         
             soup = BeautifulSoup(await resp.read(), 'html.parser')
             ret = [""]
@@ -107,7 +111,7 @@ class MagicCard(commands.Cog):
         
     async def card_legality(self):
         link = "http://gatherer.wizards.com/Pages/Card/Printings.aspx?multiverseid=%s" % self.cardId
-        async with aiohttp.request('GET', link) as resp:
+        async with self.session.get(link, ssl=False) as resp:
         
             soup = BeautifulSoup(await resp.read(), 'html.parser')
             ret = ""
